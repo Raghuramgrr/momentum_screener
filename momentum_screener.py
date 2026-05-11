@@ -373,8 +373,15 @@ def serve(port=5000):
             return jsonify({"error": "index.html not found next to momentum_screener.py"}), 404
         with open(html_path, "r", encoding="utf-8") as fh:
             html = fh.read()
+        # Detect the public-facing base URL so the injected api-base meta tag
+        # works both on localhost and on deployed hosts (Render, Fly, etc.).
+        # request.host includes the port when non-standard (e.g. localhost:5000)
+        # but not on standard ports (80/443), so this is safe in all cases.
+        scheme   = request.headers.get("X-Forwarded-Proto", request.scheme)
+        host     = request.headers.get("X-Forwarded-Host",  request.host)
+        api_base = f"{scheme}://{host}/api"
         meta_tags = (
-            f'<meta name="api-base" content="http://localhost:{port}/api">\n'
+            f'<meta name="api-base" content="{api_base}">\n'
             f'<meta name="api-key"  content="{API_KEY}">\n'
         )
         html = html.replace("<head>", f"<head>\n{meta_tags}", 1)

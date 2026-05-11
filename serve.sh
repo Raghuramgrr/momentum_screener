@@ -173,13 +173,17 @@ if command -v lsof &>/dev/null; then
   fi
 fi
 
-# ── API key: always auto-generate for this session ────────────────────────────
-# Never written to disk. Flask receives it via env var; the HTML receives it
-# injected as a <meta> tag by Flask's / route. No leakage.
-head "Generating session API key..."
-SESSION_KEY=$($PYTHON -c "import secrets; print(secrets.token_urlsafe(32))")
-export API_KEY="$SESSION_KEY"
-ok "Session key generated (not stored to disk)"
+# ── API key setup ─────────────────────────────────────────────────────────────
+# On Render/cloud: set API_KEY in the dashboard Environment tab — it persists.
+# On local dev: auto-generate a fresh key each session (never written to disk).
+head "API key..."
+if [[ -n "${API_KEY:-}" ]]; then
+  ok "Using existing API_KEY from environment (Render / shell export)"
+else
+  SESSION_KEY=$($PYTHON -c "import secrets; print(secrets.token_urlsafe(32))")
+  export API_KEY="$SESSION_KEY"
+  ok "Session key generated (local dev — not stored to disk)"
+fi
 
 # ── start Flask backend ───────────────────────────────────────────────────────
 head "Starting Flask backend on :$PORT ..."
@@ -231,9 +235,10 @@ if $OPEN_BROWSER; then
   elif command -v open &>/dev/null; then
     open "$FRONTEND_URL" && ok "Opened in browser (macOS): $FRONTEND_URL"
   elif command -v xdg-open &>/dev/null; then
-    xdg-open "$FRONTEND_URL" 2>/dev/null & ok "Opened in browser (Linux): $FRONTEND_URL"
+    # Suppress errors on headless servers (Render, CI) where no display exists
+    xdg-open "$FRONTEND_URL" 2>/dev/null && ok "Opened in browser (Linux): $FRONTEND_URL"       || info "Headless environment — no browser to open. Visit: $FRONTEND_URL"
   else
-    warn "Open this in your browser:"
+    info "No browser opener found. Visit:"
     echo ""
     echo "    $FRONTEND_URL"
     echo ""

@@ -203,7 +203,7 @@ const PYTHON_API_BASE = _meta
   ? _meta.content
   : (window.location.protocol === 'file:' || window.location.hostname === '' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? `http://localhost:5000/api`
-    : `${window.location.origin}/api`;
+    : `${window.location.origin}/api`;  // Render / any deployed host
 const API_KEY = _apiKey ? _apiKey.content : '';
 
 async function apiFetch(url) {

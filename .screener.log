@@ -21,38 +21,39 @@ WARNING: This is a development server. Do not use it in a production deployment.
  * Running on http://127.0.0.1:5000
  * Running on http://172.27.180.232:5000
 Press CTRL+C to quit
-127.0.0.1 - - [11/May/2026 13:13:36] "GET /health HTTP/1.1" 200 -
-127.0.0.1 - - [11/May/2026 13:13:36] "GET / HTTP/1.1" 200 -
-  13:13:36  ·  [SPY] Fetching...
-  13:13:37  ·  [FLEX] Fetching...
-  13:13:37  ·  13:13:37    [JBL] Fetching...  ·  13:13:3713:13:37  [AMD] Fetching...    ·
-·
-  [MPC] Fetching...
-  [COCO] Fetching...
+127.0.0.1 - - [11/May/2026 13:25:36] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [11/May/2026 13:25:36] "GET / HTTP/1.1" 200 -
+  13:25:37  ·  [SPY] Fetching...
+  13:25:37  ·  [FLEX] Fetching...
+  13:25:37  ·  [AMD] Fetching...
+  13:25:37  13:25:37      13:25:37  ·  [COCO] Fetching...
+·  [JBL] Fetching...
+·  [MPC] Fetching...
+HTTP Error 401: {"finance":{"result":null,"error":{"code":"Unauthorized","description":"User is unable to access this feature - https://bit.ly/yahoo-finance-api-feedback"}}}
+  13:25:42  ✓  [SPY] OK  $737.62  +0.83%  65 bars  vol 47.2M
+  13:25:42  ·  [QQQ] Fetching...
 HTTP Error 401: {"finance":{"result":null,"error":{"code":"Unauthorized","description":"Invalid Crumb"}}}
 HTTP Error 401: {"finance":{"result":null,"error":{"code":"Unauthorized","description":"User is unable to access this feature - https://bit.ly/yahoo-finance-api-feedback"}}}
-  13:13:39  ✓  [SPY] OK  $737.62  +0.83%  65 bars  vol 47.2M
-  13:13:39  ·  [QQQ] Fetching...
+  13:25:45  ✓  [FLEX] OK  $142.17  +6.89%  65 bars  vol 10.3M
+  13:25:45  ✓  [FLEX] Score 75/100 | EXTENDED | ADX 87 | RSI 91 | RVOL 2.0x | MACD BULL
+127.0.0.1 - - [11/May/2026 13:25:45] "GET /api/quote?ticker=FLEX HTTP/1.1" 200 -
 HTTP Error 401: {"finance":{"result":null,"error":{"code":"Unauthorized","description":"Invalid Crumb"}}}
+  13:25:45  ✓  [AMD] OK  $455.19  +11.44%  65 bars  vol 57.7M
+  13:25:45  ⚠  [AMD] Score 55/100 | EXTENDED | ADX 70 | RSI 81 | RVOL 1.3x | MACD BULL
+127.0.0.1 - - [11/May/2026 13:25:45] "GET /api/quote?ticker=AMD HTTP/1.1" 200 -
 HTTP Error 401: {"finance":{"result":null,"error":{"code":"Unauthorized","description":"User is unable to access this feature - https://bit.ly/yahoo-finance-api-feedback"}}}
-  13:13:40  ✓  [JBL] OK  $355.15  +1.59%  65 bars  vol 1.3M
-  13:13:40  ✓  [JBL] Score 85/100 | MOMENTUM CONT. | ADX 40 | RSI 62 | RVOL 1.1x | MACD BULL
-127.0.0.1 - - [11/May/2026 13:13:40] "GET /api/quote?ticker=JBL HTTP/1.1" 200 -
-  13:13:40  ✓  [AMD] OK  $455.19  +11.44%  65 bars  vol 57.7M
-  13:13:40  ⚠  [AMD] Score 55/100 | EXTENDED | ADX 70 | RSI 81 | RVOL 1.3x | MACD BULL
-127.0.0.1 - - [11/May/2026 13:13:40] "GET /api/quote?ticker=AMD HTTP/1.1" 200 -
-  13:13:40  ✓  [FLEX] OK  $142.17  +6.89%  65 bars  vol 10.3M
-  13:13:40  ✓  [FLEX] Score 75/100 | EXTENDED | ADX 87 | RSI 91 | RVOL 2.0x | MACD BULL
-127.0.0.1 - - [11/May/2026 13:13:40] "GET /api/quote?ticker=FLEX HTTP/1.1" 200 -
+  13:25:46  ✓  [COCO] OK  $71.60  +4.98%  65 bars  vol 1.7M
+  13:25:46  ⚠  [COCO] Score 55/100 | EXTENDED | ADX 92 | RSI 92 | RVOL 1.1x | MACD BULL
+127.0.0.1 - - [11/May/2026 13:25:46] "GET /api/quote?ticker=COCO HTTP/1.1" 200 -
 HTTP Error 401: {"finance":{"result":null,"error":{"code":"Unauthorized","description":"User is unable to access this feature - https://bit.ly/yahoo-finance-api-feedback"}}}
-  13:13:40  ✓  [MPC] OK  $244.87  +1.08%  65 bars  vol 2.6M
-  13:13:40  ✓  [MPC] Score 80/100 | MOMENTUM CONT. | ADX 46 | RSI 71 | RVOL 1.2x | MACD BULL
-127.0.0.1 - - [11/May/2026 13:13:40] "GET /api/quote?ticker=MPC HTTP/1.1" 200 -
-HTTP Error 401: {"finance":{"result":null,"error":{"code":"Unauthorized","description":"User is unable to access this feature - https://bit.ly/yahoo-finance-api-feedback"}}}
-  13:13:40  ✓  [COCO] OK  $71.60  +4.98%  65 bars  vol 1.7M
-  13:13:40  ⚠  [COCO] Score 55/100 | EXTENDED | ADX 92 | RSI 92 | RVOL 1.1x | MACD BULL
-127.0.0.1 - - [11/May/2026 13:13:40] "GET /api/quote?ticker=COCO HTTP/1.1" 200 -
-  13:13:41  ✓  [QQQ] OK  $711.23  +2.34%  65 bars  vol 44.1M
-  13:13:41  ·  [^VIX] Fetching...
-  13:13:42  ✓  [^VIX] OK  $17.19  +0.64%  63 bars  vol 0.0M
-127.0.0.1 - - [11/May/2026 13:13:42] "GET /api/regime HTTP/1.1" 200 -
+  13:25:48  ✓  [MPC] OK  $244.87  +1.08%  65 bars  vol 2.6M
+  13:25:48  ✓  [MPC] Score 80/100 | MOMENTUM CONT. | ADX 46 | RSI 71 | RVOL 1.2x | MACD BULL
+127.0.0.1 - - [11/May/2026 13:25:48] "GET /api/quote?ticker=MPC HTTP/1.1" 200 -
+  13:25:48  ✓  [JBL] OK  $355.15  +1.59%  65 bars  vol 1.3M
+  13:25:48  ✓  [JBL] Score 85/100 | MOMENTUM CONT. | ADX 40 | RSI 62 | RVOL 1.1x | MACD BULL
+127.0.0.1 - - [11/May/2026 13:25:48] "GET /api/quote?ticker=JBL HTTP/1.1" 200 -
+HTTP Error 401: {"finance":{"result":null,"error":{"code":"Unauthorized","description":"Invalid Crumb"}}}
+  13:25:50  ✓  [QQQ] OK  $711.23  +2.34%  65 bars  vol 44.1M
+  13:25:50  ·  [^VIX] Fetching...
+  13:25:54  ✓  [^VIX] OK  $17.19  +0.64%  63 bars  vol 0.0M
+127.0.0.1 - - [11/May/2026 13:25:54] "GET /api/regime HTTP/1.1" 200 -
