@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Momentum Screener</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #080c10;
+            --surface: #0e1318;
+            --surface2: #141b22;
+            --border: #1e2a34;
+            --green: #00e676;
+            --red: #ff3d57;
+            --yellow: #ffd600;
+            --cyan: #00e5ff;
+            --text: #e8edf2;
+            --muted: #4a6070;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: linear-gradient(rgba(0, 230, 118, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 230, 118, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .wrap {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 24px 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 42px;
+            letter-spacing: 4px;
+            color: var(--green);
+            text-shadow: 0 0 30px rgba(0, 230, 118, 0.4);
+            line-height: 1;
+        }
+
+        .sub {
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            color: var(--muted);
+            letter-spacing: 2px;
+            margin-top: 4px;
+            margin-bottom: 1.5rem;
+        }
+
+        .regime-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 1.2rem;
+        }
+
+        .reg-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 14px;
+        }
+
+        .reg-l {
+            font-family: 'Space Mono', monospace;
+            font-size: 9px;
+            color: var(--muted);
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .reg-v {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 22px;
+        }
+
+        .reg-c {
+            font-size: 11px;
+            margin-top: 2px;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .timing {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 1.2rem;
+        }
+
+        .t-card {
+            border-radius: 8px;
+            padding: 12px 14px;
+            border: 1px solid;
+        }
+
+        .t-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 1px;
+            margin-bottom: 3px;
+        }
+
+        .t-time {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .t-desc {
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        input[type=text] {
+            flex: 1;
+            min-width: 160px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-family: 'Space Mono', monospace;
+            font-size: 13px;
+            padding: 10px 14px;
+            border-radius: 6px;
+            outline: none;
+            letter-spacing: 1px;
+        }
+
+        input[type=text]:focus {
+            border-color: var(--green);
+        }
+
+        .btn {
+            background: var(--green);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-family: 'Space Mono', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            background: #00ff88;
+        }
+
+        .btn-out {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            padding: 10px 14px;
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .btn-out:hover {
+            border-color: var(--green);
+            color: var(--green);
+        }
+
+        .chips {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .chip {
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            padding: 5px 12px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            cursor: pointer;
+            color: var(--muted);
+            transition: all 0.15s;
+        }
+
+        .session-banner {
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            margin-bottom: 1.2rem;
+            line-height: 1.6;
+        }
+
+        .chip:hover,
+        .chip.active {
+            border-color: var(--green);
+            color: var(--green);
+            background: rgba(0, 230, 118, 0.05);
+        }
+
+        /* ── penny chip styles ── */
+        .chip.penny {
+            border-color: rgba(255, 214, 0, 0.4);
+            color: var(--yellow);
+        }
+
+        .chip.penny:hover,
+        .chip.penny.active {
+            border-color: var(--yellow);
+            color: #000;
+            background: var(--yellow);
+        }
+
+        /* ── penny card styles ── */
+        .card.penny-stock {
+            border-color: rgba(255, 214, 0, 0.25);
+        }
+
+        .card.penny-stock:hover {
+            border-color: rgba(255, 214, 0, 0.5);
+        }
+
+        .penny-warn {
+            margin-top: 8px;
+            padding: 8px 10px;
+            background: rgba(255, 214, 0, 0.05);
+            border: 1px solid rgba(255, 214, 0, 0.2);
+            border-radius: 4px;
+            font-family: 'Space Mono', monospace;
+            font-size: 9px;
+            color: var(--yellow);
+            line-height: 1.7;
+        }
+
+        /* ── console ── */
+        .console-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 1rem;
+            max-height: 160px;
+            overflow-y: auto;
+        }
+
+        .console-hdr {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .console-title {
+            font-family: 'Space Mono', monospace;
+            font-size: 9px;
+            color: var(--muted);
+            letter-spacing: 1px;
+        }
+
+        .log-line {
+            padding: 2px 0;
+            border-bottom: 1px solid var(--border);
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            display: flex;
+            gap: 8px;
+            line-height: 1.5;
+        }
+
+        .log-line:last-child {
+            border-bottom: none;
+        }
+
+        .log-ts {
+            color: var(--muted);
+            min-width: 58px;
+            flex-shrink: 0;
+        }
+
+        .log-ok {
+            color: var(--green);
+        }
+
+        .log-err {
+            color: var(--red);
+        }
+
+        .log-warn {
+            color: var(--yellow);
+        }
+
+        .log-info {
+            color: var(--muted);
+        }
+
+        .rh {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .rl {
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            color: var(--muted);
+            letter-spacing: 2px;
+        }
+
+        .rc {
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            color: var(--green);
+        }
+
+        /* ── stock card ── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 10px;
+            transition: border-color 0.2s;
+        }
+
+        .card:hover {
+            border-color: rgba(0, 230, 118, 0.3);
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .ticker {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 28px;
+            letter-spacing: 2px;
+            color: var(--green);
+        }
+
+        .cname {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .setup-tag {
+            font-family: 'Space Mono', monospace;
+            font-size: 9px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: rgba(0, 229, 255, 0.08);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            color: var(--cyan);
+            margin-top: 4px;
+            display: inline-block;
+            letter-spacing: 0.5px;
+        }
+
+        .price {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 30px;
+            text-align: right;
+        }
+
+        .chg {
+            font-family: 'Space Mono', monospace;
+            font-size: 12px;
+            text-align: right;
+            margin-top: 2px;
+        }
+
+        .up {
+            color: var(--green);
+        }
+
+        .dn {
+            color: var(--red);
+        }
+
+        .mu {
+            color: var(--muted);
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+            border-top: 1px solid var(--border);
+            padding-top: 10px;
+            margin-top: 6px;
+        }
+
+        .met {
+            text-align: center;
+            background: var(--surface2);
+            border-radius: 6px;
+            padding: 6px 4px;
+        }
+
+        .met-l {
+            font-family: 'Space Mono', monospace;
+            font-size: 8px;
+            color: var(--muted);
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+        }
+
+        .met-v {
+            font-family: 'Space Mono', monospace;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .sigs {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .sig {
+            font-family: 'Space Mono', monospace;
+            font-size: 9px;
+            padding: 2px 7px;
+            border-radius: 3px;
+            border: 1px solid;
+            letter-spacing: 0.5px;
+        }
+
+        .sg {
+            color: var(--green);
+            border-color: rgba(0, 230, 118, 0.3);
+            background: rgba(0, 230, 118, 0.08);
+        }
+
+        .sr {
+            color: var(--red);
+            border-color: rgba(255, 61, 87, 0.3);
+            background: rgba(255, 61, 87, 0.08);
+        }
+
+        .sy {
+            color: var(--yellow);
+            border-color: rgba(255, 214, 0, 0.3);
+            background: rgba(255, 214, 0, 0.08);
+        }
+
+        .sn {
+            color: var(--muted);
+            border-color: var(--border);
+            background: transparent;
+        }
+
+        .reason-box {
+            margin-top: 10px;
+            padding: 10px 12px;
+            background: rgba(0, 229, 255, 0.04);
+            border-left: 2px solid rgba(0, 229, 255, 0.3);
+            border-radius: 4px;
+            font-size: 11px;
+            line-height: 1.7;
+            color: #8ea8ba;
+        }
+
+        .reason-box strong {
+            color: var(--text);
+        }
+
+        .levels {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+            padding: 10px 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        .lev {
+            text-align: center;
+        }
+
+        .lev-l {
+            font-family: 'Space Mono', monospace;
+            font-size: 8px;
+            color: var(--muted);
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+        }
+
+        .lev-v {
+            font-family: 'Space Mono', monospace;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .conf {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .conf-l {
+            font-family: 'Space Mono', monospace;
+            font-size: 9px;
+            color: var(--muted);
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .conf-bar {
+            flex: 1;
+            height: 3px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .conf-fill {
+            height: 100%;
+            border-radius: 2px;
+        }
+
+        .conf-s {
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            min-width: 36px;
+            text-align: right;
+        }
+
+        .err-box {
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            color: var(--red);
+            padding: 10px 14px;
+            background: rgba(255, 61, 87, 0.08);
+            border: 1px solid rgba(255, 61, 87, 0.2);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--muted);
+            font-family: 'Space Mono', monospace;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+
+        .api-banner {
+            display: none;
+            background: rgba(0, 229, 255, 0.06);
+            border: 1px solid rgba(0, 229, 255, 0.25);
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 1rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            color: var(--cyan);
+            letter-spacing: 0.5px;
+            line-height: 1.7;
+        }
+
+        .api-banner.show {
+            display: block;
+        }
+
+        .disc {
+            margin-top: 2rem;
+            font-size: 10px;
+            color: var(--muted);
+            font-family: 'Space Mono', monospace;
+            line-height: 1.7;
+            padding: 12px 16px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 214, 0, 0.15);
+            background: rgba(255, 214, 0, 0.03);
+        }
+
+        @media(max-width:600px) {
+            .metrics {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .levels {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .regime-bar,
+            .timing {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .title {
+                font-size: 30px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+
+        <div class="title">MOMENTUM / SCAN</div>
+        <div class="sub">MULTI-FACTOR SWING &amp; INTRADAY SIGNAL ENGINE · LIVE DATA</div>
+
+        <div class="api-banner" id="apiBanner">
+            ⚡ PYTHON BACKEND ACTIVE — fetching via momentum_screener.py (localhost:5000). No CORS issues.
+        </div>
+
+        <!-- Market Regime -->
+        <div class="regime-bar">
+            <div class="reg-card">
+                <div class="reg-l">SPY</div>
+                <div class="reg-v" id="spyP">—</div>
+                <div class="reg-c" id="spyC">—</div>
+            </div>
+            <div class="reg-card">
+                <div class="reg-l">QQQ</div>
+                <div class="reg-v" id="qqqP">—</div>
+                <div class="reg-c" id="qqqC">—</div>
+            </div>
+            <div class="reg-card">
+                <div class="reg-l">VIX</div>
+                <div class="reg-v" id="vixP">—</div>
+                <div class="reg-c" id="vixC">—</div>
+            </div>
+            <div class="reg-card">
+                <div class="reg-l">REGIME</div>
+                <div class="reg-v" id="regV" style="font-size:16px;margin-top:4px">LOADING</div>
+                <div class="reg-c" id="regD" style="color:var(--muted)">—</div>
+            </div>
+        </div>
+
+        <!-- Live Market Session Banner -->
+        <div class="session-banner" id="sessionBanner">Detecting market session...</div>
+
+        <!-- Timing Guide -->
+        <div class="timing">
+            <div class="t-card" style="border-color:rgba(0,230,118,0.3);background:rgba(0,230,118,0.05)">
+                <div class="t-label" style="color:var(--green)">BEST WINDOW</div>
+                <div class="t-time" style="color:var(--green)">9:30 – 10:30 AM ET</div>
+                <div class="t-desc" style="color:#8eb8a0">Opening momentum. Highest volume, sharpest moves. Enter
+                    breakouts here.</div>
+            </div>
+            <div class="t-card" style="border-color:rgba(255,214,0,0.3);background:rgba(255,214,0,0.04)">
+                <div class="t-label" style="color:var(--yellow)">MIDDAY CHOP</div>
+                <div class="t-time" style="color:var(--yellow)">11:30 AM – 2:00 PM ET</div>
+                <div class="t-desc" style="color:#b8a870">Low volume, false signals. Avoid new entries. Monitor open
+                    positions only.</div>
+            </div>
+            <div class="t-card" style="border-color:rgba(0,229,255,0.3);background:rgba(0,229,255,0.04)">
+                <div class="t-label" style="color:var(--cyan)">POWER HOUR</div>
+                <div class="t-time" style="color:var(--cyan)">3:00 – 4:00 PM ET</div>
+                <div class="t-desc" style="color:#70a8b8">Institutional rebalancing. Trail stops or exit. Strong trends
+                    continue here.</div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <input type="text" id="tickerInput" placeholder="FLEX, AMD, JBL, COCO, MARA..." />
+            <button class="btn" id="scanBtn" onclick="runScan()">▶ SCAN</button>
+            <button class="btn-out" onclick="clearAll()">CLEAR</button>
+            <button class="btn-out" onclick="toggleConsole()" id="consoleToggle">LOGS ▾</button>
+        </div>
+
+        <!-- Preset Chips -->
+        <div class="chips">
+            <div class="chip active" onclick="loadPreset('watchlist',this)">MY WATCHLIST</div>
+            <div class="chip" onclick="loadPreset('ai',this)">AI / INFRA</div>
+            <div class="chip" onclick="loadPreset('momentum',this)">MOMENTUM</div>
+            <div class="chip" onclick="loadPreset('energy',this)">ENERGY</div>
+            <div class="chip" onclick="loadPreset('mag7',this)">MAG 7</div>
+            <div class="chip penny" onclick="loadPreset('penny_vol',this)">⚡ PENNY · VOLUME</div>
+            <div class="chip penny" onclick="loadPreset('penny_bio',this)">⚡ PENNY · BIOTECH</div>
+            <div class="chip penny" onclick="loadPreset('penny_tech',this)">⚡ PENNY · TECH</div>
+        </div>
+
+        <!-- Debug Console -->
+        <div class="console-box" id="consoleBox">
+            <div class="console-hdr">
+                <div class="console-title">FETCH LOG</div>
+                <button class="btn-out" style="padding:2px 8px;font-size:9px" onclick="clearLog()">CLEAR</button>
+            </div>
+            <div id="logLines">
+                <div class="log-line"><span class="log-ts log-info">READY</span><span class="log-info">Screener
+                        initialised. Click SCAN or pick a preset.</span></div>
+            </div>
+        </div>
+
+        <div class="rh">
+            <div class="rl">SCAN RESULTS</div>
+            <div class="rc" id="resCt"></div>
+        </div>
+
+        <div id="stockGrid">
+            <div class="empty">Enter tickers above and click SCAN, or pick a preset watchlist</div>
+        </div>
+
+        <div class="disc">
+            ⚠ NOT FINANCIAL ADVICE. Signals are algorithmic and for educational purposes only. Always use stop-losses.
+            Past performance does not predict future results.<br><br>
+            PENNY STOCKS: Extremely high risk. Never hold overnight. Size down 50%+. Enter ONLY when regime is RISK ON
+            and RVOL &gt; 2x.<br><br>
+            CORS NOTE: If all fetches fail, open via localhost: python -m http.server 8080<br>
+            OR run Python backend: python momentum_screener.py --serve then set USE_PYTHON_API = true below.
+        </div>
+
+    </div><!-- end .wrap -->
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════
+        // CONFIG
+        // Set USE_PYTHON_API = true when running: python momentum_screener.py --serve
+        // ═══════════════════════════════════════════════════════════════
+        const USE_PYTHON_API = true;
+        const PYTHON_API_BASE = 'http://localhost:5000/api';
+
+        // ── PRESETS ──────────────────────────────────────────────────────
+        const PRESETS = {
+            watchlist: ['FLEX', 'AMD', 'JBL', 'COCO', 'MPC'],
+            ai: ['NVDA', 'AMD', 'FLEX', 'JBL', 'PLTR', 'SMCI'],
+            momentum: ['AAPL', 'MSFT', 'AMZN', 'META', 'TSLA', 'NFLX'],
+            energy: ['MPC', 'XOM', 'CVX', 'COP', 'SLB'],
+            mag7: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'TSLA', 'NVDA'],
+            // ── PENNY STOCKS ────────────────────────────────────────────
+            // Run ONLY in RISK ON regime. Size down 50%. No overnight holds.
+            penny_vol: ['MARA', 'RIOT', 'CLSK', 'CIFR', 'HUT', 'ARBK', 'BTBT', 'BITF', 'HIVE', 'WULF'],
+            penny_bio: ['SNDX', 'IMVT', 'VERA', 'PRAX', 'JANX', 'DAWN', 'ITOS', 'NUVB', 'KYMR', 'VKTX'],
+            penny_tech: ['BBAI', 'AEYE', 'WRAP', 'GFAI', 'UXIN', 'BTCS', 'HOLO', 'MIMO', 'VERB', 'IDEX'],
+        };
+
+        const PENNY_PRESETS = new Set(['penny_vol', 'penny_bio', 'penny_tech']);
+        let activePennyPreset = false;
+        let consoleVisible = true;
+
+        // ── LOGGING ──────────────────────────────────────────────────────
+        function ts() {
+            const n = new Date();
+            return n.getHours().toString().padStart(2, '0') + ':' +
+                n.getMinutes().toString().padStart(2, '0') + ':' +
+                n.getSeconds().toString().padStart(2, '0');
+        }
+        function log(msg, type = 'info') {
+            const box = document.getElementById('logLines');
+            const d = document.createElement('div');
+            d.className = 'log-line';
+            d.innerHTML = `<span class="log-ts log-${type}">${ts()}</span><span class="log-${type}">${msg}</span>`;
+            box.appendChild(d);
+            document.getElementById('consoleBox').scrollTop = 9999;
+        }
+        function clearLog() { document.getElementById('logLines').innerHTML = ''; }
+        function toggleConsole() {
+            consoleVisible = !consoleVisible;
+            document.getElementById('consoleBox').style.display = consoleVisible ? '' : 'none';
+            document.getElementById('consoleToggle').textContent = consoleVisible ? 'LOGS ▾' : 'LOGS ▸';
+        }
+
+        // ── FETCH ────────────────────────────────────────────────────────
+        async function fetchQuote(ticker) {
+            if (USE_PYTHON_API) {
+                log(`[${ticker}] Fetching via Python backend...`, 'info');
+                const res = await fetch(`${PYTHON_API_BASE}/quote?ticker=${ticker}`);
+                if (!res.ok) throw new Error(`Backend ${res.status}`);
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+                log(`[${ticker}] ✓ Backend OK — $${data.price.toFixed(2)} score ${data.score}/100`, 'ok');
+                return { analyzed: true, ...data };
+            }
+            const urls = [
+                `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=65d`,
+                `https://query2.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=65d`,
+            ];
+            let lastErr = null;
+            for (let i = 0; i < urls.length; i++) {
+                log(`[${ticker}] Trying query${i + 1}.finance.yahoo.com...`, 'info');
+                try {
+                    const res = await fetch(urls[i], { headers: { 'Accept': 'application/json' } });
+                    if (!res.ok) {
+                        const reason = res.status === 429 ? 'Rate limited (429)' :
+                            res.status === 404 ? 'Ticker not found (404)' :
+                                res.status === 403 ? 'Access denied (403) — open via localhost or set USE_PYTHON_API=true' :
+                                    `HTTP ${res.status}`;
+                        log(`[${ticker}] ✗ ${reason}`, 'warn');
+                        lastErr = reason; continue;
+                    }
+                    const data = await res.json();
+                    if (!data?.chart?.result?.[0]) {
+                        log(`[${ticker}] ✗ Empty payload — delisted or invalid ticker`, 'err');
+                        throw new Error('empty payload');
+                    }
+                    const result = data.chart.result[0];
+                    const meta = result.meta;
+                    const q = result.indicators.quote[0];
+                    const closes = q.close.map((v, i) => v ?? q.close[i - 1]).filter(v => v != null && !isNaN(v));
+                    const volumes = q.volume.filter(v => v != null && !isNaN(v));
+                    const highs = q.high.filter(v => v != null && !isNaN(v));
+                    const lows = q.low.filter(v => v != null && !isNaN(v));
+                    if (closes.length < 15) {
+                        log(`[${ticker}] ✗ Only ${closes.length} bars — need 15+`, 'warn');
+                        throw new Error('insufficient data');
+                    }
+                    const price = meta.regularMarketPrice;
+                    const prev = meta.chartPreviousClose || closes[closes.length - 2];
+                    const changePct = ((price - prev) / prev) * 100;
+                    const volM = (volumes[volumes.length - 1] / 1e6).toFixed(1);
+                    log(`[${ticker}] ✓ OK — $${price.toFixed(2)}  ${changePct >= 0 ? '+' : ''}${changePct.toFixed(2)}%  ${closes.length} bars  vol ${volM}M`, 'ok');
+                    return { ticker, price, prev, change: price - prev, changePct, closes, volumes, highs, lows, meta };
+                } catch (e) {
+                    if (e.message === 'empty payload' || e.message === 'insufficient data') throw e;
+                    log(`[${ticker}] ✗ Network/CORS on query${i + 1}: ${e.message}`, 'err');
+                    lastErr = e.message;
+                }
+            }
+            log(`[${ticker}] ✗ All endpoints failed: ${lastErr}. Fix: open via localhost OR set USE_PYTHON_API=true.`, 'err');
+            throw new Error(lastErr || 'fetch failed');
+        }
+
+        // ── INDICATORS ───────────────────────────────────────────────────
+        function ema(d, p) {
+            const k = 2 / (p + 1); let e = d[0];
+            for (let i = 1; i < d.length; i++) e = d[i] * k + e * (1 - k);
+            return e;
+        }
+        function rsi(c, p = 14) {
+            if (c.length < p + 1) return 50;
+            let g = 0, l = 0;
+            for (let i = c.length - p; i < c.length; i++) { const d = c[i] - c[i - 1]; if (d > 0) g += d; else l -= d; }
+            return 100 - 100 / (1 + g / (l || 1e-9));
+        }
+        function macdVal(c) { const m = ema(c, 12) - ema(c, 26); return { m, bull: m > 0 }; }
+        function adxVal(h, l, c, p = 14) {
+            if (c.length < p + 2) return 20;
+            let sp = 0, sm = 0, st = 0; const n = Math.min(c.length - 1, p);
+            for (let i = c.length - n; i < c.length; i++) {
+                const tr = Math.max(h[i] - l[i], Math.abs(h[i] - c[i - 1]), Math.abs(l[i] - c[i - 1]));
+                const dp = Math.max(h[i] - h[i - 1], 0), dm = Math.max(l[i - 1] - l[i], 0);
+                st += tr; sp += dp > dm ? dp : 0; sm += dm > dp ? dm : 0;
+            }
+            const pip = (sp / st) * 100, mim = (sm / st) * 100;
+            return (Math.abs(pip - mim) / (pip + mim || 1)) * 100;
+        }
+        function rvolVal(v) {
+            if (v.length < 21) return 1;
+            const avg = v.slice(-21, -1).reduce((a, b) => a + b, 0) / 20;
+            return v[v.length - 1] / (avg || 1);
+        }
+        function atrVal(h, l, c, p = 14) {
+            const n = Math.min(c.length - 1, p); let s = 0;
+            for (let i = c.length - n; i < c.length; i++)
+                s += Math.max(h[i] - l[i], Math.abs(h[i] - c[i - 1]), Math.abs(l[i] - c[i - 1]));
+            return s / n;
+        }
+        function bbSqueeze(c, p = 20) {
+            if (c.length < p) return false;
+            const sl = c.slice(-p), avg = sl.reduce((a, b) => a + b, 0) / p;
+            const std = Math.sqrt(sl.reduce((s, v) => s + (v - avg) ** 2, 0) / p);
+            return (2 * std) / avg < 0.05;
+        }
+
+        // ── SIGNAL ENGINE ────────────────────────────────────────────────
+        // ── MARKET SESSION CLOCK ─────────────────────────────────────────
+        // Returns a live, time-aware action string based on current ET time.
+        // US market hours: 9:30 AM – 4:00 PM ET (Mon–Fri).
+        // Pre-market:      4:00 AM – 9:30 AM ET
+        // After-hours:     4:00 PM – 8:00 PM ET
+        function getETHour() {
+            // ET = UTC-5 (EST) or UTC-4 (EDT). Use Intl to get accurate local ET time.
+            const etStr = new Date().toLocaleString('en-US', { timeZone: 'America/New_York' });
+            return new Date(etStr);
+        }
+
+        function marketSessionNow() {
+            const et = getETHour();
+            const day = et.getDay(); // 0=Sun, 6=Sat
+            const h = et.getHours();
+            const m = et.getMinutes();
+            const mins = h * 60 + m; // minutes since midnight ET
+
+            const PRE_OPEN = 4 * 60;        //  4:00 AM ET
+            const OPEN = 9 * 60 + 30;   //  9:30 AM ET
+            const OPEN_END = 10 * 60 + 30;   // 10:30 AM ET
+            const CHOP_START = 11 * 60 + 30;   // 11:30 AM ET
+            const CHOP_END = 14 * 60;        //  2:00 PM ET
+            const POWER_START = 15 * 60;        //  3:00 PM ET
+            const CLOSE = 16 * 60;        //  4:00 PM ET
+            const AFTER_END = 20 * 60;        //  8:00 PM ET
+
+            const isWeekday = day >= 1 && day <= 5;
+
+            if (!isWeekday)
+                return {
+                    session: 'WEEKEND', color: 'var(--muted)',
+                    action: 'Markets closed. Use this time to build your watchlist and set alerts for Monday open.'
+                };
+
+            if (mins < PRE_OPEN)
+                return {
+                    session: 'OVERNIGHT', color: 'var(--muted)',
+                    action: 'Markets closed overnight. Set your alerts and get ready — pre-market opens at 4:00 AM ET.'
+                };
+
+            if (mins >= PRE_OPEN && mins < OPEN) {
+                const waitM = OPEN - mins;
+                const waitH = Math.floor(waitM / 60);
+                const waitR = waitM % 60;
+                const waitStr = waitH > 0 ? `${waitH}h ${waitR}m` : `${waitR}m`;
+                return {
+                    session: 'PRE-MARKET', color: 'var(--yellow)',
+                    action: `Market opens in ${waitStr} (9:30 AM ET). Monitor pre-market volume and news. Do NOT enter — spreads are wide and moves are often faked. Finalise your watchlist now.`
+                };
+            }
+
+            if (mins >= OPEN && mins < OPEN_END)
+                return {
+                    session: 'OPEN — BEST WINDOW', color: 'var(--green)',
+                    action: '🟢 BEST TIME TO ENTER. Opening momentum is live. Watch for volume surge (RVOL > 1.5x) in first 15 min before committing. Enter breakouts now.'
+                };
+
+            if (mins >= OPEN_END && mins < CHOP_START)
+                return {
+                    session: 'MID-MORNING', color: 'var(--cyan)',
+                    action: 'Decent window — momentum from open may still be running. Only enter if RVOL is holding above 1.5x. Tighten stops on existing positions.'
+                };
+
+            if (mins >= CHOP_START && mins < CHOP_END)
+                return {
+                    session: 'MIDDAY CHOP', color: 'var(--red)',
+                    action: '🔴 AVOID NEW ENTRIES. Low volume, choppy price action, high false-signal rate. Sit on hands. Monitor open positions and trail stops if profitable.'
+                };
+
+            if (mins >= CHOP_END && mins < POWER_START)
+                return {
+                    session: 'AFTERNOON', color: 'var(--yellow)',
+                    action: 'Volume starting to return. Watch for setups building into power hour. Do not enter yet — wait for 3:00 PM ET confirmation.'
+                };
+
+            if (mins >= POWER_START && mins < CLOSE)
+                return {
+                    session: 'POWER HOUR', color: 'var(--green)',
+                    action: '🟢 POWER HOUR ACTIVE. Institutional rebalancing drives strong directional moves. Enter only with RVOL confirmation. Trail stops tightly — do not hold through close unless conviction is very high.'
+                };
+
+            if (mins >= CLOSE && mins < AFTER_END)
+                return {
+                    session: 'AFTER-HOURS', color: 'var(--muted)',
+                    action: 'Market closed. After-hours volume is thin — moves are unreliable. Review today\'s signals, update watchlist, set alerts for tomorrow open.'
+                };
+
+            return {
+                session: 'CLOSED', color: 'var(--muted)',
+                action: 'Markets closed. Rest up. Next opportunity at 9:30 AM ET.'
+            };
+        }
+
+        // Render the live session banner (called once on load + on each scan)
+        function renderSessionBanner() {
+            const s = marketSessionNow();
+            const el = document.getElementById('sessionBanner');
+            if (!el) return;
+            el.innerHTML = `
+    <span style="color:${s.color};font-weight:700;letter-spacing:1px">${s.session}</span>
+    <span style="color:var(--muted);margin:0 8px">·</span>
+    <span style="color:#9ab">${s.action}</span>`;
+        }
+
+        // Inject time-aware action into the static "when" string from buildReason
+        function liveWhenToEnter(staticWhen, score) {
+            const s = marketSessionNow();
+            // If market is not open at all, override completely
+            if (['OVERNIGHT', 'WEEKEND', 'CLOSED', 'PRE-MARKET', 'AFTER-HOURS'].includes(s.session)) {
+                return s.action;
+            }
+            // If midday chop, warn regardless of score
+            if (s.session === 'MIDDAY CHOP') {
+                return `${s.action}<br><span style="color:var(--muted)">Signal noted for later — ${staticWhen}</span>`;
+            }
+            // During best windows, combine live status with signal guidance
+            return `${s.action}<br><span style="color:var(--muted)">${staticWhen}</span>`;
+        }
+
+        function buildReason(a) {
+            const reasons = [], risks = [];
+            if (a.adxV > 35) reasons.push(`ADX ${a.adxV.toFixed(0)} — very strong trend`);
+            else if (a.adxV > 25) reasons.push(`ADX ${a.adxV.toFixed(0)} — trend confirmed`);
+            else risks.push(`ADX ${a.adxV.toFixed(0)} — weak trend`);
+
+            if (a.rvolV > 2) reasons.push(`RVOL ${a.rvolV.toFixed(1)}x — institutional surge`);
+            else if (a.rvolV > 1.5) reasons.push(`RVOL ${a.rvolV.toFixed(1)}x — vol confirms move`);
+            else risks.push(`RVOL ${a.rvolV.toFixed(1)}x — low volume`);
+
+            if (a.rsiV >= 55 && a.rsiV <= 70) reasons.push(`RSI ${a.rsiV.toFixed(0)} — ideal bull zone`);
+            else if (a.rsiV > 70) risks.push(`RSI ${a.rsiV.toFixed(0)} — overbought`);
+            else if (a.rsiV < 45) risks.push(`RSI ${a.rsiV.toFixed(0)} — bearish momentum`);
+
+            if (a.macdBull) reasons.push('MACD positive');
+            else risks.push('MACD negative');
+
+            if (a.pct20 > 0 && a.pct20 <= 5) reasons.push(`${a.pct20.toFixed(1)}% above 20 EMA — clean structure`);
+            else if (a.pct20 > 8) risks.push(`${a.pct20.toFixed(1)}% above 20 EMA — extended`);
+
+            if (a.squeeze) reasons.push('BB squeeze — volatility compression');
+
+            const staticWhen = a.score >= 65
+                ? 'Enter 9:30–10:00 AM ET open OR Power Hour 3–4 PM ET on volume spike'
+                : a.score >= 45
+                    ? 'Wait for RVOL > 1.5x before entry. Skip 11:30 AM–2 PM midday chop'
+                    : 'Low confidence — observe only, skip or wait for stronger setup';
+            const when = liveWhenToEnter(staticWhen, a.score);
+            return { reasons, risks, when };
+        }
+
+        function analyzeStock(data) {
+            const { ticker, changePct, closes, volumes, highs, lows, meta, price } = data;
+            const e9 = ema(closes, 9), e20 = ema(closes, 20), e50 = ema(closes, 50);
+            const rsiV = rsi(closes);
+            const { m: macdLine, bull: macdBull } = macdVal(closes);
+            const adxV = adxVal(highs, lows, closes);
+            const rvolV = rvolVal(volumes);
+            const squeeze = bbSqueeze(closes);
+            const atrV = atrVal(highs, lows, closes);
+            const pct20 = (price - e20) / e20 * 100, extended = pct20 > 8;
+            const rsiBull = rsiV >= 55 && rsiV <= 70, trendStrong = adxV > 25;
+
+            let score = 30;
+            if (trendStrong) score += 15;
+            if (adxV > 35) score += 5;
+            if (rvolV > 1.5) score += 15;
+            if (rvolV > 2) score += 5;
+            if (macdBull) score += 10;
+            if (price > e9 && price > e20) score += 10;
+            if (price > e50) score += 5;
+            if (rsiBull) score += 10;
+            else if (rsiV >= 45) score += 5;
+            if (squeeze) score += 10;
+            if (extended) score -= 15;
+            if (rsiV > 80) score -= 10;
+            score = Math.max(10, Math.min(95, score));
+
+            let setup = 'NEUTRAL';
+            if (extended && rsiV > 70) setup = 'EXTENDED';
+            else if (squeeze && adxV < 25) setup = 'BB SQUEEZE';
+            else if (trendStrong && macdBull && price > e20) setup = 'MOMENTUM CONT.';
+            else if (changePct > 5 && rvolV > 1.5) setup = 'BREAKOUT';
+            else if (changePct < -3 && price > e50) setup = 'PULLBACK ENTRY';
+            else if (macdBull && price > e20) setup = 'TREND FOLLOWING';
+
+            const stop = (price - 1.5 * atrV).toFixed(2);
+            const t1 = (price + 2.0 * atrV).toFixed(2);
+            const t2 = (price + 3.5 * atrV).toFixed(2);
+
+            const sigs = [];
+            sigs.push(trendStrong ? { l: `ADX ${adxV.toFixed(0)}`, c: 'sg' } : { l: `ADX ${adxV.toFixed(0)} WEAK`, c: 'sy' });
+            if (rsiV > 80) sigs.push({ l: `RSI ${rsiV.toFixed(0)} OB`, c: 'sr' });
+            else if (rsiBull) sigs.push({ l: `RSI ${rsiV.toFixed(0)} BULL`, c: 'sg' });
+            else sigs.push({ l: `RSI ${rsiV.toFixed(0)}`, c: 'sn' });
+            sigs.push(macdBull ? { l: 'MACD BULL', c: 'sg' } : { l: 'MACD BEAR', c: 'sr' });
+            sigs.push(rvolV > 1.5 ? { l: `RVOL ${rvolV.toFixed(1)}x`, c: 'sg' } : { l: `RVOL ${rvolV.toFixed(1)}x`, c: 'sn' });
+            sigs.push(price > e20 ? { l: 'ABOVE 20 EMA', c: 'sg' } : { l: 'BELOW 20 EMA', c: 'sr' });
+            if (squeeze) sigs.push({ l: 'BB SQUEEZE', c: 'sy' });
+            if (extended) sigs.push({ l: `EXTENDED +${pct20.toFixed(0)}%`, c: 'sr' });
+
+            const { reasons, risks, when } = buildReason({ adxV, rvolV, rsiV, macdBull, pct20, squeeze, score });
+
+            log(`[${ticker}] Score ${score}/100 | ${setup} | ADX ${adxV.toFixed(0)} | RSI ${rsiV.toFixed(0)} | RVOL ${rvolV.toFixed(1)}x | MACD ${macdBull ? 'BULL' : 'BEAR'}`,
+                score >= 65 ? 'ok' : score >= 45 ? 'warn' : 'err');
+
+            return {
+                ticker, name: meta?.longName || ticker,
+                price, changePct, setup, score,
+                rsiV, adxV, rvolV, macdLine, macdBull,
+                atrV, stop, t1, t2, sigs, pct20,
+                reasons, risks, when,
+            };
+        }
+
+        // ── RENDER ───────────────────────────────────────────────────────
+        function cc(s) { return s >= 70 ? 'var(--green)' : s >= 50 ? 'var(--yellow)' : 'var(--red)'; }
+
+        function renderCard(a) {
+            // normalise field names (Python snake_case vs JS camelCase)
+            const price = a.price;
+            const changePct = a.changePct ?? a.change_pct;
+            const rsiV = a.rsiV ?? a.rsi;
+            const adxV = a.adxV ?? a.adx;
+            const rvolV = a.rvolV ?? a.rvol;
+            const macdLine = a.macdLine ?? a.macd;
+            const macdBull = a.macdBull ?? a.macd_bull;
+            const atrV = a.atrV ?? a.atr;
+            const pct20 = a.pct20;
+            const reasons = a.reasons ?? [];
+            const risks = a.risks ?? [];
+            const when = a.when ?? a.whenToRun ?? '';
+
+            // build sig pills when coming from Python backend (no pre-built sigs)
+            let sigs = a.sigs;
+            if (!sigs) {
+                sigs = [];
+                sigs.push(adxV > 25 ? { l: `ADX ${adxV.toFixed(0)}`, c: 'sg' } : { l: `ADX ${adxV.toFixed(0)} WEAK`, c: 'sy' });
+                if (rsiV > 80) sigs.push({ l: `RSI ${rsiV.toFixed(0)} OB`, c: 'sr' });
+                else if (rsiV >= 55 && rsiV <= 70) sigs.push({ l: `RSI ${rsiV.toFixed(0)} BULL`, c: 'sg' });
+                else sigs.push({ l: `RSI ${rsiV.toFixed(0)}`, c: 'sn' });
+                sigs.push(macdBull ? { l: 'MACD BULL', c: 'sg' } : { l: 'MACD BEAR', c: 'sr' });
+                sigs.push(rvolV > 1.5 ? { l: `RVOL ${rvolV.toFixed(1)}x`, c: 'sg' } : { l: `RVOL ${rvolV.toFixed(1)}x`, c: 'sn' });
+            }
+
+            const dir = changePct >= 0;
+            const isPenny = activePennyPreset || price < 10;
+
+            const pennyWarn = isPenny ? `
+    <div class="penny-warn">
+      ⚠ PENNY STOCK — Extreme volatility, low float. Size position down 50%+.
+      Use ATR stop religiously. Do NOT hold overnight.
+      Enter ONLY in RISK ON regime with RVOL &gt; 2x. Treat signals as directional bias, not certainty.
+    </div>` : '';
+
+            const rHtml = reasons.length ? `<strong>Why this trade:</strong> ${reasons.join(' · ')}` : '';
+            const rkHtml = risks.length ? `<br><strong>Risks:</strong> ${risks.join(' · ')}` : '';
+            const wHtml = when ? `<br><strong>When to enter:</strong> ${when}` : '';
+
+            return `
+<div class="card${isPenny ? ' penny-stock' : ''}">
+  <div class="card-top">
+    <div>
+      <div class="ticker">${a.ticker}</div>
+      <div class="cname">${a.name || a.ticker}${isPenny ? ' <span style="font-size:9px;color:var(--yellow);border:1px solid rgba(255,214,0,0.4);padding:1px 5px;border-radius:3px;margin-left:4px">PENNY</span>' : ''}</div>
+      <div class="setup-tag">${a.setup}</div>
+    </div>
+    <div>
+      <div class="price">$${price.toFixed(2)}</div>
+      <div class="chg ${dir ? 'up' : 'dn'}">${dir ? '+' : ''}${changePct.toFixed(2)}% TODAY</div>
+    </div>
+  </div>
+  <div class="metrics">
+    <div class="met"><div class="met-l">RSI</div><div class="met-v ${rsiV > 70 ? 'dn' : rsiV >= 55 ? 'up' : 'mu'}">${rsiV.toFixed(0)}</div></div>
+    <div class="met"><div class="met-l">ADX</div><div class="met-v ${adxV > 25 ? 'up' : 'mu'}">${adxV.toFixed(0)}</div></div>
+    <div class="met"><div class="met-l">RVOL</div><div class="met-v ${rvolV > 1.5 ? 'up' : 'mu'}">${rvolV.toFixed(1)}x</div></div>
+    <div class="met"><div class="met-l">MACD</div><div class="met-v ${macdBull ? 'up' : 'dn'}">${macdBull ? '▲' : '▼'}${Math.abs(macdLine).toFixed(1)}</div></div>
+    <div class="met"><div class="met-l">ATR</div><div class="met-v mu">$${atrV.toFixed(2)}</div></div>
+    <div class="met"><div class="met-l">vs 20EMA</div><div class="met-v ${pct20 >= 0 ? 'up' : 'dn'}">${pct20 >= 0 ? '+' : ''}${pct20.toFixed(1)}%</div></div>
+  </div>
+  <div class="sigs">${sigs.map(s => `<span class="sig ${s.c}">${s.l}</span>`).join('')}</div>
+  <div class="levels">
+    <div class="lev"><div class="lev-l">ENTRY</div><div class="lev-v mu">$${price.toFixed(2)}</div></div>
+    <div class="lev"><div class="lev-l">STOP</div><div class="lev-v dn">$${a.stop}</div></div>
+    <div class="lev"><div class="lev-l">TARGET 1</div><div class="lev-v up">$${a.t1}</div></div>
+    <div class="lev"><div class="lev-l">TARGET 2</div><div class="lev-v up">$${a.t2}</div></div>
+  </div>
+  ${pennyWarn}
+  <div class="reason-box">${rHtml}${rkHtml}${wHtml}</div>
+  <div class="conf">
+    <div class="conf-l">CONFIDENCE</div>
+    <div class="conf-bar"><div class="conf-fill" style="width:${a.score}%;background:${cc(a.score)}"></div></div>
+    <div class="conf-s" style="color:${cc(a.score)}">${a.score}/100</div>
+  </div>
+</div>`;
+        }
+
+        // ── REGIME ───────────────────────────────────────────────────────
+        async function loadRegime() {
+            log('Fetching regime: SPY, QQQ, VIX...', 'info');
+            try {
+                let spy, qqq, vix;
+                if (USE_PYTHON_API) {
+                    const r = await fetch(`${PYTHON_API_BASE}/regime`);
+                    const d = await r.json();
+                    spy = d.spy; qqq = d.qqq; vix = d.vix;
+                } else {
+                    const [sd, qd, vd] = await Promise.all([
+                        fetchQuote('SPY'), fetchQuote('QQQ'), fetchQuote('^VIX')
+                    ]);
+                    spy = { price: sd.price, changePct: sd.changePct };
+                    qqq = { price: qd.price, changePct: qd.changePct };
+                    vix = { price: vd.price, changePct: vd.changePct };
+                }
+                const fmt = d => `<span class="${d.changePct >= 0 ? 'up' : 'dn'}">${d.changePct >= 0 ? '+' : ''}${d.changePct.toFixed(2)}%</span>`;
+                document.getElementById('spyP').textContent = '$' + spy.price.toFixed(2);
+                document.getElementById('spyC').innerHTML = fmt(spy);
+                document.getElementById('qqqP').textContent = '$' + qqq.price.toFixed(2);
+                document.getElementById('qqqC').innerHTML = fmt(qqq);
+                document.getElementById('vixP').textContent = vix.price.toFixed(2);
+                document.getElementById('vixC').innerHTML = `<span class="${vix.changePct >= 0 ? 'dn' : 'up'}">${vix.changePct >= 0 ? '+' : ''}${vix.changePct.toFixed(2)}%</span>`;
+
+                const bull = spy.changePct > 0 && qqq.changePct > 0 && vix.price < 20;
+                const neu = !bull && vix.price < 25;
+                const label = bull ? 'RISK ON' : neu ? 'NEUTRAL' : 'RISK OFF';
+                const desc = bull ? 'Long setups preferred' : neu ? 'Selective only' : 'Avoid new longs';
+                const col = bull ? 'var(--green)' : neu ? 'var(--yellow)' : 'var(--red)';
+                document.getElementById('regV').textContent = label;
+                document.getElementById('regV').style.color = col;
+                document.getElementById('regD').textContent = desc;
+                log(`Regime: ${label} | SPY ${spy.changePct.toFixed(2)}% | QQQ ${qqq.changePct.toFixed(2)}% | VIX ${vix.price.toFixed(1)}`,
+                    bull ? 'ok' : neu ? 'warn' : 'err');
+            } catch (e) {
+                log('Regime fetch failed: ' + e.message, 'err');
+                document.getElementById('regV').textContent = 'UNAVAILABLE';
+            }
+        }
+
+        // ── SCAN ─────────────────────────────────────────────────────────
+        async function runScan() {
+            const raw = document.getElementById('tickerInput').value.trim();
+            if (!raw) { log('No tickers entered.', 'warn'); return; }
+            const tickers = raw.toUpperCase().split(/[\s,]+/).filter(Boolean);
+            const grid = document.getElementById('stockGrid');
+            const btn = document.getElementById('scanBtn');
+
+            btn.textContent = 'SCANNING...'; btn.disabled = true;
+            document.getElementById('resCt').textContent = '';
+            grid.innerHTML = tickers.map(() => `<div class="card" style="opacity:0.3;height:60px"></div>`).join('');
+            log(`─── Scan started: ${tickers.join(', ')} ───`, 'info');
+
+            const results = [], errors = [];
+            await Promise.all(tickers.map(async t => {
+                try {
+                    const raw = await fetchQuote(t);
+                    results.push(raw.analyzed ? raw : analyzeStock(raw));
+                } catch (e) { errors.push({ t, reason: e.message }); }
+            }));
+
+            results.sort((a, b) => b.score - a.score);
+            grid.innerHTML = '';
+
+            errors.forEach(e => {
+                grid.innerHTML += `<div class="err-box">
+      ✗ <strong>${e.t}</strong> — ${e.reason}
+      <br><span style="color:var(--muted);font-size:10px">
+        Check LOGS above. Fix: open via localhost, or set USE_PYTHON_API=true and run the .py backend.
+      </span>
+    </div>`;
+            });
+
+            if (!results.length && !errors.length)
+                grid.innerHTML = `<div class="empty">No results. Check ticker symbols.</div>`;
+
+            grid.innerHTML += results.map(renderCard).join('');
+            document.getElementById('resCt').textContent =
+                `${results.length} analyzed · ${errors.length} failed`;
+            log(`─── Scan complete: ${results.length} ok, ${errors.length} failed ───`,
+                results.length > 0 ? 'ok' : 'err');
+            btn.textContent = '▶ SCAN'; btn.disabled = false;
+        }
+
+        function clearAll() {
+            document.getElementById('stockGrid').innerHTML =
+                `<div class="empty">Enter tickers and click SCAN, or pick a preset</div>`;
+            document.getElementById('resCt').textContent = '';
+            log('Results cleared.', 'info');
+        }
+
+        function loadPreset(name, el) {
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            activePennyPreset = PENNY_PRESETS.has(name);
+            document.getElementById('tickerInput').value = PRESETS[name].join(', ');
+            runScan();
+        }
+
+        document.getElementById('tickerInput').addEventListener('keydown', e => {
+            if (e.key === 'Enter') runScan();
+        });
+
+        if (USE_PYTHON_API) document.getElementById('apiBanner').classList.add('show');
+
+        renderSessionBanner();
+        setInterval(renderSessionBanner, 60000); // refresh every minute
+
+        loadRegime();
+        document.getElementById('tickerInput').value = PRESETS.watchlist.join(', ');
+        setTimeout(runScan, 500);
+    </script>
+</body>
+
+</html>
