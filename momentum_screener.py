@@ -15,6 +15,7 @@ Install:
 
 import sys
 import os
+import hmac
 import time
 import argparse
 import functools
@@ -204,22 +205,25 @@ def analyze(data):
 
     return dict(
         ticker=data["ticker"], name=data["name"],
-        price=price, change_pct=chg_pct,
+        price=price, changePct=chg_pct,           # ← camelCase for JS frontend
+        change_pct=chg_pct,                        # ← keep snake_case alias too
         setup=setup, score=score,
         rsi=rsi_v, adx=adx_v, rvol=rvol_v,
         macd=macd_v, macd_bull=macd_bull,
         atr=atr_v, pct20=pct20, squeeze=squeeze,
-        stop=stop, t1=t1, t2=t2, rr=rr,
+        stop=str(stop), t1=str(t1), t2=str(t2), rr=rr,
         reasons=reasons, risks=risks, when=when,
     )
 
 # ── REGIME ────────────────────────────────────────────────────────────────────
 def regime_data():
+    """Returns SPY/QQQ/VIX data with camelCase keys for the JS frontend."""
     results = {}
     for sym in ["SPY", "QQQ", "^VIX"]:
         d = fetch(sym)
         if d: results[sym] = d
     if len(results) < 3: return None
+    # FIX: use camelCase changePct so JS frontend (d.spy.changePct) works correctly
     return {
         "spy": {"price": results["SPY"]["price"],  "changePct": results["SPY"]["change_pct"]},
         "qqq": {"price": results["QQQ"]["price"],  "changePct": results["QQQ"]["change_pct"]},
@@ -227,11 +231,14 @@ def regime_data():
     }
 
 def market_regime():
+    """CLI-only: pretty-print current market regime."""
     log("Fetching market regime (SPY, QQQ, VIX)...", "info")
     rd = regime_data()
     if not rd: return "UNKNOWN"
     vix = rd["vix"]["price"]
-    if rd["spy"]["changePct"] > 0 and rd["qqq"]["changePct"] > 0 and vix < 20:
+    spy_chg = rd["spy"]["changePct"]   # FIX: was rd["spy"]["change_pct"] — KeyError
+    qqq_chg = rd["qqq"]["changePct"]
+    if spy_chg > 0 and qqq_chg > 0 and vix < 20:
         return green("RISK ON") + f"  — Long setups preferred. VIX {vix:.1f}"
     elif vix < 25:
         return yellow("NEUTRAL") + f" — Selective only. VIX {vix:.1f}"
@@ -261,8 +268,8 @@ def print_card(a, rank):
     sqz    = yellow("SQUEEZE") if a["squeeze"] else dim("no squeeze")
     print(f"  ADX {adx_c}  RSI {rsi_c}  RVOL {rvol_c}  "
           f"MACD {macd_c}  vs20EMA {pct_c}  ATR ${a['atr']:.2f}  {sqz}")
-    entry_s=dim(f"${a['price']:.2f}"); stop_s=red(f"${a['stop']:.2f}")
-    t1_s=green(f"${a['t1']:.2f}"); t2_s=green(f"${a['t2']:.2f}"); rr_s=cyan(f"1:{a['rr']}")
+    entry_s=dim(f"${a['price']:.2f}"); stop_s=red(f"${a['stop']}"); 
+    t1_s=green(f"${a['t1']}"); t2_s=green(f"${a['t2']}"); rr_s=cyan(f"1:{a['rr']}")
     print(f"\n  {'ENTRY':>10}  {'STOP':>10}  {'TARGET 1':>10}  {'TARGET 2':>10}  {'R:R':>6}")
     print(f"  {entry_s:>10}  {stop_s:>10}  {t1_s:>10}  {t2_s:>10}  {rr_s:>6}")
     print(f"\n  CONFIDENCE  {conf_bar(a['score'])}  {bold(str(a['score']))}/100")
@@ -321,83 +328,74 @@ def run(tickers, watch=False):
 # ── FLASK API SERVER ──────────────────────────────────────────────────────────
 def serve(port=5000):
     try:
-        from flask import Flask, jsonify, request, abort
+        from flask import Flask, jsonify, request
         from flask_cors import CORS
     except ImportError:
         print(red("\n  Run:  pip install flask flask-cors\n"))
         sys.exit(1)
 
     # ── API key auth ──────────────────────────────────────────────────────────
-    # Set API_KEY env var before starting. Generate one with:
-    #   python -c "import secrets; print(secrets.token_urlsafe(32))"
     API_KEY = os.environ.get("API_KEY", "")
     if not API_KEY:
         print(yellow("\n  ⚠  WARNING: API_KEY env var not set. Server is UNPROTECTED."))
         print(   "     Generate one:  python -c \"import secrets; print(secrets.token_urlsafe(32))\"")
         print(   "     Then:          export API_KEY=your_key_here\n")
 
-    # Allowed origins — set ALLOWED_ORIGINS=https://yoursite.com in env
     raw_origins = os.environ.get("ALLOWED_ORIGINS", "*")
     origins = [o.strip() for o in raw_origins.split(",")] if raw_origins != "*" else "*"
 
     app = Flask(__name__)
     CORS(app, origins=origins)
 
+    # FIX: moved hmac import to module top level; decorator is clean now
     def require_api_key(f):
-        """Decorator: validate Bearer token or ?api_key= query param."""
         @functools.wraps(f)
         def decorated(*args, **kwargs):
-            if not API_KEY:          # no key set → allow all (dev mode)
+            if not API_KEY:
                 return f(*args, **kwargs)
-            # Check Authorization header
-            auth = request.headers.get("Authorization", "")
+            auth  = request.headers.get("Authorization", "")
             token = auth.removeprefix("Bearer ").strip() if auth.startswith("Bearer ") else ""
-            # Fallback: check query param
             if not token:
                 token = request.args.get("api_key", "")
-            import hmac
             if not hmac.compare_digest(token, API_KEY):
-                abort(401, description="Invalid or missing API key")
+                return jsonify({"error": "Unauthorized", "message": "Invalid or missing API key"}), 401
             return f(*args, **kwargs)
         return decorated
-
-    @app.errorhandler(401)
-    def unauthorized(e):
-        return jsonify({"error": "Unauthorized", "message": str(e.description)}), 401
-
-    @app.errorhandler(400)
-    def bad_request(e):
-        return jsonify({"error": "Bad request", "message": str(e.description)}), 400
 
     # ── routes ────────────────────────────────────────────────────────────────
     @app.route("/")
     def index():
-        return jsonify({
-            "service": "Momentum Screener API",
-            "version": "1.0.0",
-            "auth": "Bearer token required (Authorization: Bearer YOUR_API_KEY)",
-            "endpoints": {
-                "quote":  "/api/quote?ticker=FLEX",
-                "regime": "/api/regime",
-                "scan":   "/api/scan?tickers=FLEX,AMD,JBL  OR  ?preset=watchlist",
-            }
-        })
+        # Serve index.html with api-key and api-base injected as <meta> tags.
+        # The browser receives the key only over localhost — never in the URL or JS source.
+        from flask import Response
+        html_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "index.html")
+        if not os.path.exists(html_path):
+            return jsonify({"error": "index.html not found next to momentum_screener.py"}), 404
+        with open(html_path, "r", encoding="utf-8") as fh:
+            html = fh.read()
+        meta_tags = (
+            f'<meta name="api-base" content="http://localhost:{port}/api">\n'
+            f'<meta name="api-key"  content="{API_KEY}">\n'
+        )
+        html = html.replace("<head>", f"<head>\n{meta_tags}", 1)
+        return Response(html, mimetype="text/html")
 
     @app.route("/health")
     def health():
-        # Public — no auth needed. Render uses this for uptime checks.
-        return jsonify({"status": "ok", "timestamp": datetime.utcnow().isoformat()})
+        from datetime import timezone
+        return jsonify({"status": "ok", "timestamp": datetime.now(timezone.utc).isoformat()})
 
     @app.route("/api/quote")
     @require_api_key
     def api_quote():
         ticker = request.args.get("ticker", "").upper().strip()
         if not ticker:
-            abort(400, "ticker param required")
+            return jsonify({"error": "ticker param required"}), 400
         data = fetch(ticker)
         if not data:
             return jsonify({"error": f"Could not fetch {ticker}"}), 500
-        return jsonify(analyze(data))
+        result = analyze(data)
+        return jsonify(result)
 
     @app.route("/api/regime")
     @require_api_key
@@ -417,7 +415,7 @@ def serve(port=5000):
         elif raw:
             tickers = [t.strip().upper() for t in raw.split(",") if t.strip()]
         else:
-            abort(400, "pass ?tickers=FLEX,AMD or ?preset=watchlist")
+            return jsonify({"error": "pass ?tickers=FLEX,AMD or ?preset=watchlist"}), 400
         results = []
         for t in tickers:
             d = fetch(t)
@@ -432,10 +430,10 @@ def serve(port=5000):
     print(f"\n  {green('Auth:')}    {'API key required (Bearer token)' if API_KEY else red('UNPROTECTED — set API_KEY env var')}")
     print(f"  {green('Origins:')} {origins}")
     print(f"\n  {green('Routes:')}")
-    print(f"  {cyan('GET')}  http://0.0.0.0:{port}/health                        (public)")
-    print(f"  {cyan('GET')}  http://0.0.0.0:{port}/api/quote?ticker=FLEX         (auth)")
-    print(f"  {cyan('GET')}  http://0.0.0.0:{port}/api/regime                    (auth)")
-    print(f"  {cyan('GET')}  http://0.0.0.0:{port}/api/scan?preset=watchlist     (auth)")
+    print(f"  {cyan('GET')}  http://localhost:{port}/health                        (public)")
+    print(f"  {cyan('GET')}  http://localhost:{port}/api/quote?ticker=FLEX         (auth)")
+    print(f"  {cyan('GET')}  http://localhost:{port}/api/regime                    (auth)")
+    print(f"  {cyan('GET')}  http://localhost:{port}/api/scan?preset=watchlist     (auth)")
     print(f"\n  {dim('Press Ctrl+C to stop.')}\n")
 
     app.run(host="0.0.0.0", port=port, debug=False)

@@ -34,14 +34,11 @@
   .chip{font-family:'Space Mono',monospace;font-size:10px;padding:5px 12px;border:1px solid var(--border);border-radius:20px;cursor:pointer;color:var(--muted);transition:all 0.15s;}
   .session-banner{font-family:'Space Mono',monospace;font-size:11px;padding:10px 14px;border-radius:8px;background:var(--surface);border:1px solid var(--border);margin-bottom:1.2rem;line-height:1.6;}
   .chip:hover,.chip.active{border-color:var(--green);color:var(--green);background:rgba(0,230,118,0.05);}
-  /* ── penny chip styles ── */
   .chip.penny{border-color:rgba(255,214,0,0.4);color:var(--yellow);}
   .chip.penny:hover,.chip.penny.active{border-color:var(--yellow);color:#000;background:var(--yellow);}
-  /* ── penny card styles ── */
   .card.penny-stock{border-color:rgba(255,214,0,0.25);}
   .card.penny-stock:hover{border-color:rgba(255,214,0,0.5);}
   .penny-warn{margin-top:8px;padding:8px 10px;background:rgba(255,214,0,0.05);border:1px solid rgba(255,214,0,0.2);border-radius:4px;font-family:'Space Mono',monospace;font-size:9px;color:var(--yellow);line-height:1.7;}
-  /* ── console ── */
   .console-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:1rem;max-height:160px;overflow-y:auto;}
   .console-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
   .console-title{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;}
@@ -52,7 +49,6 @@
   .rh{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
   .rl{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;}
   .rc{font-family:'Space Mono',monospace;font-size:11px;color:var(--green);}
-  /* ── stock card ── */
   .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:10px;transition:border-color 0.2s;}
   .card:hover{border-color:rgba(0,230,118,0.3);}
   .card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
@@ -179,8 +175,8 @@
   <div class="disc">
     ⚠ NOT FINANCIAL ADVICE. Signals are algorithmic and for educational purposes only. Always use stop-losses. Past performance does not predict future results.<br><br>
     PENNY STOCKS: Extremely high risk. Never hold overnight. Size down 50%+. Enter ONLY when regime is RISK ON and RVOL &gt; 2x.<br><br>
-    CORS NOTE: If all fetches fail, open via localhost:  python -m http.server 8080<br>
-    OR run Python backend:  python momentum_screener.py --serve  then set USE_PYTHON_API = true below.
+    Backend: python momentum_screener.py --serve<br>
+    Frontend: open index.html in browser (or use the launch.sh script)
   </div>
 
 </div><!-- end .wrap -->
@@ -188,19 +184,28 @@
 <script>
 // ═══════════════════════════════════════════════════════════════
 // CONFIG
-// Set USE_PYTHON_API = true when deploying with Python backend.
-// API_KEY is read from <meta name="api-base"> injected by server,
-// or set manually below for local dev.
+// ─ USE_PYTHON_API = true  → talk to the Flask backend on :5000
+// ─ USE_PYTHON_API = false → fetch directly from Yahoo (CORS issues
+//   unless opened via localhost or a web server)
+//
+// The base URL auto-detects: if the page is served from :5000 itself
+// (Flask also serves the HTML), it uses the same origin.
+// If opened from a different port (e.g. :8080 via python -m http.server),
+// it falls back to localhost:5000.
 // ═══════════════════════════════════════════════════════════════
-const USE_PYTHON_API  = true;
+const USE_PYTHON_API = true;
 
-// Auto-detect base URL: use current host when deployed, fallback to localhost
-const _meta   = document.querySelector('meta[name="api-base"]');
+// FIX: always point at the Flask server on :5000, regardless of what
+// port this HTML file is being served from.
+const _meta = document.querySelector('meta[name="api-base"]');
 const _apiKey = document.querySelector('meta[name="api-key"]');
-const PYTHON_API_BASE = _meta ? _meta.content : (window.location.origin + '/api');
-const API_KEY         = _apiKey ? _apiKey.content : '';  // set via meta tag from server
+const PYTHON_API_BASE = _meta
+  ? _meta.content
+  : (window.location.protocol === 'file:' || window.location.hostname === '' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? `http://localhost:5000/api`
+    : `${window.location.origin}/api`;
+const API_KEY = _apiKey ? _apiKey.content : '';
 
-// Helper: fetch with auth header attached automatically
 async function apiFetch(url) {
   const headers = { 'Accept': 'application/json' };
   if (API_KEY) headers['Authorization'] = 'Bearer ' + API_KEY;
@@ -217,8 +222,6 @@ const PRESETS = {
   momentum:   ['AAPL','MSFT','AMZN','META','TSLA','NFLX'],
   energy:     ['MPC','XOM','CVX','COP','SLB'],
   mag7:       ['AAPL','MSFT','GOOGL','AMZN','META','TSLA','NVDA'],
-  // ── PENNY STOCKS ────────────────────────────────────────────
-  // Run ONLY in RISK ON regime. Size down 50%. No overnight holds.
   penny_vol:  ['MARA','RIOT','CLSK','CIFR','HUT','ARBK','BTBT','BITF','HIVE','WULF'],
   penny_bio:  ['SNDX','IMVT','VERA','PRAX','JANX','DAWN','ITOS','NUVB','KYMR','VKTX'],
   penny_tech: ['BBAI','AEYE','WRAP','GFAI','UXIN','BTCS','HOLO','MIMO','VERB','IDEX'],
@@ -253,11 +256,13 @@ function toggleConsole(){
 // ── FETCH ────────────────────────────────────────────────────────
 async function fetchQuote(ticker){
   if(USE_PYTHON_API){
-    log(`[${ticker}] Fetching via Python backend...`,'info');
-    const data=await apiFetch(`${PYTHON_API_BASE}/quote?ticker=${ticker}`);
+    log(`[${ticker}] Fetching via Python backend (${PYTHON_API_BASE})...`,'info');
+    const data = await apiFetch(`${PYTHON_API_BASE}/quote?ticker=${ticker}`);
     log(`[${ticker}] ✓ Backend OK — $${data.price.toFixed(2)} score ${data.score}/100`,'ok');
-    return{analyzed:true,...data};
+    // Mark as pre-analysed so runScan() skips the JS analyzeStock() call
+    return { _preAnalyzed: true, ...data };
   }
+  // ── Direct Yahoo path (CORS-restricted) ──────────────────────
   const urls=[
     `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=65d`,
     `https://query2.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=65d`,
@@ -291,19 +296,22 @@ async function fetchQuote(ticker){
         log(`[${ticker}] ✗ Only ${closes.length} bars — need 15+`,'warn');
         throw new Error('insufficient data');
       }
-      const price   =meta.regularMarketPrice;
-      const prev    =meta.chartPreviousClose||closes[closes.length-2];
-      const changePct=((price-prev)/prev)*100;
-      const volM    =(volumes[volumes.length-1]/1e6).toFixed(1);
+      const price    = meta.regularMarketPrice ?? closes[closes.length-1];
+      const prev     = meta.chartPreviousClose  ?? closes[closes.length-2];
+      const changePct= ((price-prev)/prev)*100;
+      const volM     = (volumes[volumes.length-1]/1e6).toFixed(1);
+      // FIX: longName lives in meta not in a separate .info call
+      const name = meta.longName || meta.shortName || ticker;
       log(`[${ticker}] ✓ OK — $${price.toFixed(2)}  ${changePct>=0?'+':''}${changePct.toFixed(2)}%  ${closes.length} bars  vol ${volM}M`,'ok');
-      return{ticker,price,prev,change:price-prev,changePct,closes,volumes,highs,lows,meta};
+      return{ticker, name, price, prev, change:price-prev, changePct,
+             closes, volumes, highs, lows, meta};
     }catch(e){
       if(e.message==='empty payload'||e.message==='insufficient data') throw e;
       log(`[${ticker}] ✗ Network/CORS on query${i+1}: ${e.message}`,'err');
       lastErr=e.message;
     }
   }
-  log(`[${ticker}] ✗ All endpoints failed: ${lastErr}. Fix: open via localhost OR set USE_PYTHON_API=true.`,'err');
+  log(`[${ticker}] ✗ All endpoints failed: ${lastErr}. Fix: run  python momentum_screener.py --serve`,'err');
   throw new Error(lastErr||'fetch failed');
 }
 
@@ -349,82 +357,65 @@ function bbSqueeze(c,p=20){
   return(2*std)/avg<0.05;
 }
 
-// ── SIGNAL ENGINE ────────────────────────────────────────────────
 // ── MARKET SESSION CLOCK ─────────────────────────────────────────
-// Returns a live, time-aware action string based on current ET time.
-// US market hours: 9:30 AM – 4:00 PM ET (Mon–Fri).
-// Pre-market:      4:00 AM – 9:30 AM ET
-// After-hours:     4:00 PM – 8:00 PM ET
-function getETHour(){
-  // ET = UTC-5 (EST) or UTC-4 (EDT). Use Intl to get accurate local ET time.
+function getETTime(){
   const etStr = new Date().toLocaleString('en-US',{timeZone:'America/New_York'});
   return new Date(etStr);
 }
 
 function marketSessionNow(){
-  const et   = getETHour();
-  const day  = et.getDay(); // 0=Sun, 6=Sat
+  const et   = getETTime();
+  const day  = et.getDay();
   const h    = et.getHours();
   const m    = et.getMinutes();
-  const mins = h * 60 + m; // minutes since midnight ET
+  const mins = h * 60 + m;
 
-  const PRE_OPEN   = 4  * 60;        //  4:00 AM ET
-  const OPEN       = 9  * 60 + 30;   //  9:30 AM ET
-  const OPEN_END   = 10 * 60 + 30;   // 10:30 AM ET
-  const CHOP_START = 11 * 60 + 30;   // 11:30 AM ET
-  const CHOP_END   = 14 * 60;        //  2:00 PM ET
-  const POWER_START= 15 * 60;        //  3:00 PM ET
-  const CLOSE      = 16 * 60;        //  4:00 PM ET
-  const AFTER_END  = 20 * 60;        //  8:00 PM ET
+  const PRE_OPEN   = 4  * 60;
+  const OPEN       = 9  * 60 + 30;
+  const OPEN_END   = 10 * 60 + 30;
+  const CHOP_START = 11 * 60 + 30;
+  const CHOP_END   = 14 * 60;
+  const POWER_START= 15 * 60;
+  const CLOSE      = 16 * 60;
+  const AFTER_END  = 20 * 60;
 
-  const isWeekday  = day >= 1 && day <= 5;
+  const isWeekday = day >= 1 && day <= 5;
 
   if(!isWeekday)
     return { session:'WEEKEND', color:'var(--muted)',
              action:'Markets closed. Use this time to build your watchlist and set alerts for Monday open.' };
-
   if(mins < PRE_OPEN)
     return { session:'OVERNIGHT', color:'var(--muted)',
              action:'Markets closed overnight. Set your alerts and get ready — pre-market opens at 4:00 AM ET.' };
-
   if(mins >= PRE_OPEN && mins < OPEN){
     const waitM = OPEN - mins;
-    const waitH = Math.floor(waitM/60);
-    const waitR = waitM % 60;
+    const waitH = Math.floor(waitM/60), waitR = waitM % 60;
     const waitStr = waitH > 0 ? `${waitH}h ${waitR}m` : `${waitR}m`;
     return { session:'PRE-MARKET', color:'var(--yellow)',
-             action:`Market opens in ${waitStr} (9:30 AM ET). Monitor pre-market volume and news. Do NOT enter — spreads are wide and moves are often faked. Finalise your watchlist now.` };
+             action:`Market opens in ${waitStr}. Monitor pre-market volume and news. Do NOT enter — spreads are wide. Finalise your watchlist now.` };
   }
-
   if(mins >= OPEN && mins < OPEN_END)
     return { session:'OPEN — BEST WINDOW', color:'var(--green)',
-             action:'🟢 BEST TIME TO ENTER. Opening momentum is live. Watch for volume surge (RVOL > 1.5x) in first 15 min before committing. Enter breakouts now.' };
-
+             action:'🟢 BEST TIME TO ENTER. Opening momentum live. Watch for volume surge (RVOL > 1.5x) in first 15 min before committing.' };
   if(mins >= OPEN_END && mins < CHOP_START)
     return { session:'MID-MORNING', color:'var(--cyan)',
-             action:'Decent window — momentum from open may still be running. Only enter if RVOL is holding above 1.5x. Tighten stops on existing positions.' };
-
+             action:'Decent window — momentum from open may still be running. Only enter if RVOL is holding above 1.5x.' };
   if(mins >= CHOP_START && mins < CHOP_END)
     return { session:'MIDDAY CHOP', color:'var(--red)',
-             action:'🔴 AVOID NEW ENTRIES. Low volume, choppy price action, high false-signal rate. Sit on hands. Monitor open positions and trail stops if profitable.' };
-
+             action:'🔴 AVOID NEW ENTRIES. Low volume, choppy price action, high false-signal rate. Monitor open positions and trail stops.' };
   if(mins >= CHOP_END && mins < POWER_START)
     return { session:'AFTERNOON', color:'var(--yellow)',
-             action:'Volume starting to return. Watch for setups building into power hour. Do not enter yet — wait for 3:00 PM ET confirmation.' };
-
+             action:'Volume returning. Watch for setups building into power hour. Wait for 3:00 PM ET confirmation.' };
   if(mins >= POWER_START && mins < CLOSE)
     return { session:'POWER HOUR', color:'var(--green)',
-             action:'🟢 POWER HOUR ACTIVE. Institutional rebalancing drives strong directional moves. Enter only with RVOL confirmation. Trail stops tightly — do not hold through close unless conviction is very high.' };
-
+             action:'🟢 POWER HOUR ACTIVE. Institutional rebalancing. Enter only with RVOL confirmation. Trail stops tightly.' };
   if(mins >= CLOSE && mins < AFTER_END)
     return { session:'AFTER-HOURS', color:'var(--muted)',
-             action:'Market closed. After-hours volume is thin — moves are unreliable. Review today\'s signals, update watchlist, set alerts for tomorrow open.' };
-
+             action:"Market closed. After-hours volume is thin — moves are unreliable. Review signals, update watchlist." };
   return { session:'CLOSED', color:'var(--muted)',
-           action:'Markets closed. Rest up. Next opportunity at 9:30 AM ET.' };
+           action:'Markets closed. Next opportunity at 9:30 AM ET.' };
 }
 
-// Render the live session banner (called once on load + on each scan)
 function renderSessionBanner(){
   const s = marketSessionNow();
   const el = document.getElementById('sessionBanner');
@@ -435,18 +426,16 @@ function renderSessionBanner(){
     <span style="color:#9ab">${s.action}</span>`;
 }
 
-// Inject time-aware action into the static "when" string from buildReason
+// FIX: called for BOTH JS-analysed AND Python-backend results
+// so every card gets a live session override on the "when to enter" text.
 function liveWhenToEnter(staticWhen, score){
   const s = marketSessionNow();
-  // If market is not open at all, override completely
   if(['OVERNIGHT','WEEKEND','CLOSED','PRE-MARKET','AFTER-HOURS'].includes(s.session)){
     return s.action;
   }
-  // If midday chop, warn regardless of score
   if(s.session === 'MIDDAY CHOP'){
-    return `${s.action}<br><span style="color:var(--muted)">Signal noted for later — ${staticWhen}</span>`;
+    return `${s.action}<br><span style="color:var(--muted)">Signal noted — ${staticWhen}</span>`;
   }
-  // During best windows, combine live status with signal guidance
   return `${s.action}<br><span style="color:var(--muted)">${staticWhen}</span>`;
 }
 
@@ -482,7 +471,7 @@ function buildReason(a){
 }
 
 function analyzeStock(data){
-  const{ticker,changePct,closes,volumes,highs,lows,meta,price}=data;
+  const{ticker,changePct,closes,volumes,highs,lows,meta,price,name}=data;
   const e9=ema(closes,9), e20=ema(closes,20), e50=ema(closes,50);
   const rsiV=rsi(closes);
   const{m:macdLine,bull:macdBull}=macdVal(closes);
@@ -537,7 +526,7 @@ function analyzeStock(data){
       score>=65?'ok':score>=45?'warn':'err');
 
   return{
-    ticker, name:meta?.longName||ticker,
+    ticker, name: name || meta?.longName || meta?.shortName || ticker,
     price, changePct, setup, score,
     rsiV, adxV, rvolV, macdLine, macdBull,
     atrV, stop, t1, t2, sigs, pct20,
@@ -549,21 +538,24 @@ function analyzeStock(data){
 function cc(s){ return s>=70?'var(--green)':s>=50?'var(--yellow)':'var(--red)'; }
 
 function renderCard(a){
-  // normalise field names (Python snake_case vs JS camelCase)
+  // Normalise field names — Python uses snake_case, JS uses camelCase
+  // Python now also emits camelCase aliases, but keep fallbacks for safety.
   const price     = a.price;
-  const changePct = a.changePct  ?? a.change_pct;
-  const rsiV      = a.rsiV       ?? a.rsi;
-  const adxV      = a.adxV       ?? a.adx;
-  const rvolV     = a.rvolV      ?? a.rvol;
-  const macdLine  = a.macdLine   ?? a.macd;
-  const macdBull  = a.macdBull   ?? a.macd_bull;
-  const atrV      = a.atrV       ?? a.atr;
-  const pct20     = a.pct20;
+  const changePct = a.changePct  ?? a.change_pct ?? 0;
+  const rsiV      = a.rsiV       ?? a.rsi        ?? 50;
+  const adxV      = a.adxV       ?? a.adx        ?? 20;
+  const rvolV     = a.rvolV      ?? a.rvol       ?? 1;
+  const macdLine  = a.macdLine   ?? a.macd       ?? 0;
+  const macdBull  = a.macdBull   ?? a.macd_bull  ?? false;
+  const atrV      = a.atrV       ?? a.atr        ?? 0;
+  const pct20     = a.pct20      ?? 0;
   const reasons   = a.reasons    ?? [];
   const risks     = a.risks      ?? [];
-  const when      = a.when       ?? a.whenToRun ?? '';
+  // FIX: always pipe the static "when" through liveWhenToEnter so
+  // Python-backend results also get the live session overlay.
+  const staticWhen = a.when ?? '';
+  const when = liveWhenToEnter(staticWhen, a.score);
 
-  // build sig pills when coming from Python backend (no pre-built sigs)
   let sigs = a.sigs;
   if(!sigs){
     sigs=[];
@@ -575,14 +567,14 @@ function renderCard(a){
     sigs.push(rvolV>1.5?{l:`RVOL ${rvolV.toFixed(1)}x`,c:'sg'}:{l:`RVOL ${rvolV.toFixed(1)}x`,c:'sn'});
   }
 
-  const dir    = changePct>=0;
-  const isPenny= activePennyPreset || price<10;
+  const dir    = changePct >= 0;
+  const isPenny= activePennyPreset || price < 10;
 
   const pennyWarn = isPenny ? `
     <div class="penny-warn">
       ⚠ PENNY STOCK — Extreme volatility, low float. Size position down 50%+.
       Use ATR stop religiously. Do NOT hold overnight.
-      Enter ONLY in RISK ON regime with RVOL &gt; 2x. Treat signals as directional bias, not certainty.
+      Enter ONLY in RISK ON regime with RVOL &gt; 2x.
     </div>` : '';
 
   const rHtml  = reasons.length ? `<strong>Why this trade:</strong> ${reasons.join(' · ')}` : '';
@@ -633,7 +625,8 @@ async function loadRegime(){
   try{
     let spy,qqq,vix;
     if(USE_PYTHON_API){
-      const d=await apiFetch(`${PYTHON_API_BASE}/regime`);
+      // Python regime endpoint returns camelCase changePct (fixed in .py)
+      const d = await apiFetch(`${PYTHON_API_BASE}/regime`);
       spy=d.spy; qqq=d.qqq; vix=d.vix;
     }else{
       const [sd,qd,vd]=await Promise.all([
@@ -684,7 +677,8 @@ async function runScan(){
   await Promise.all(tickers.map(async t=>{
     try{
       const raw=await fetchQuote(t);
-      results.push(raw.analyzed ? raw : analyzeStock(raw));
+      // FIX: only run JS analyzeStock() if data came from Yahoo (not pre-analysed by Python)
+      results.push(raw._preAnalyzed ? raw : analyzeStock(raw));
     }catch(e){ errors.push({t,reason:e.message}); }
   }));
 
@@ -695,7 +689,7 @@ async function runScan(){
     grid.innerHTML+=`<div class="err-box">
       ✗ <strong>${e.t}</strong> — ${e.reason}
       <br><span style="color:var(--muted);font-size:10px">
-        Check LOGS above. Fix: open via localhost, or set USE_PYTHON_API=true and run the .py backend.
+        Check LOGS above. Make sure  python momentum_screener.py --serve  is running on :5000.
       </span>
     </div>`;
   });
@@ -733,7 +727,7 @@ document.getElementById('tickerInput').addEventListener('keydown',e=>{
 if(USE_PYTHON_API) document.getElementById('apiBanner').classList.add('show');
 
 renderSessionBanner();
-setInterval(renderSessionBanner, 60000); // refresh every minute
+setInterval(renderSessionBanner, 60000);
 
 loadRegime();
 document.getElementById('tickerInput').value=PRESETS.watchlist.join(', ');
