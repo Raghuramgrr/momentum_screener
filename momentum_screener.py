@@ -7,15 +7,17 @@ Usage:
   python momentum_screener.py FLEX AMD JBL NVDA      # custom tickers
   python momentum_screener.py --preset ai            # preset watchlist
   python momentum_screener.py --watch                # auto-refresh every 5 min
-  python momentum_screener.py --serve                # start API server on :5000
+  python momentum_screener.py --serve                # API server on :5000
 
 Install:
-  pip install yfinance pandas tabulate colorama flask flask-cors
+  pip install -r requirements.txt
 """
 
 import sys
+import os
 import time
 import argparse
+import functools
 from datetime import datetime
 
 # ── deps ──────────────────────────────────────────────────────────────────────
@@ -27,7 +29,7 @@ try:
     init(autoreset=True)
 except ImportError as e:
     print(f"\n  Missing dependency: {e}")
-    print("  pip install yfinance pandas tabulate colorama flask flask-cors\n")
+    print("  pip install -r requirements.txt\n")
     sys.exit(1)
 
 # ── PRESETS ───────────────────────────────────────────────────────────────────
@@ -37,16 +39,14 @@ PRESETS = {
     "momentum":  ["AAPL", "MSFT", "AMZN", "META", "TSLA", "NFLX"],
     "energy":    ["MPC", "XOM", "CVX", "COP", "SLB"],
     "mag7":      ["AAPL", "MSFT", "GOOGL", "AMZN", "META", "TSLA", "NVDA"],
+    "penny_vol":  ["MARA","RIOT","CLSK","CIFR","HUT","ARBK","BTBT","BITF","HIVE","WULF"],
+    "penny_bio":  ["SNDX","IMVT","VERA","PRAX","JANX","DAWN","ITOS","NUVB","KYMR","VKTX"],
+    "penny_tech": ["BBAI","AEYE","WRAP","GFAI","UXIN","BTCS","HOLO","MIMO","VERB","IDEX"],
 }
 
 # ── COLOURS ───────────────────────────────────────────────────────────────────
-G  = Fore.GREEN
-R  = Fore.RED
-Y  = Fore.YELLOW
-C  = Fore.CYAN
-DM = Style.DIM
-B  = Style.BRIGHT
-RS = Style.RESET_ALL
+G  = Fore.GREEN;  R = Fore.RED;  Y = Fore.YELLOW;  C = Fore.CYAN
+DM = Style.DIM;   B = Style.BRIGHT;  RS = Style.RESET_ALL
 
 def green(t):  return f"{G}{B}{t}{RS}"
 def red(t):    return f"{R}{B}{t}{RS}"
@@ -55,7 +55,6 @@ def cyan(t):   return f"{C}{t}{RS}"
 def dim(t):    return f"{DM}{t}{RS}"
 def bold(t):   return f"{B}{t}{RS}"
 
-# ── LOGGING ───────────────────────────────────────────────────────────────────
 def log(msg, level="info"):
     ts  = datetime.now().strftime("%H:%M:%S")
     tag = {"ok": green("✓"), "err": red("✗"), "warn": yellow("⚠"), "info": dim("·")}[level]
@@ -70,26 +69,20 @@ def fetch(ticker):
         if raw.empty or len(raw) < 15:
             log(f"[{ticker}] Only {len(raw)} bars — need 15+", "warn")
             return None
-
         if isinstance(raw.columns, pd.MultiIndex):
             raw.columns = raw.columns.get_level_values(0)
-
         closes  = raw["Close"].dropna().tolist()
         volumes = raw["Volume"].dropna().tolist()
         highs   = raw["High"].dropna().tolist()
         lows    = raw["Low"].dropna().tolist()
-
         price   = closes[-1]
         prev    = closes[-2]
         chg_pct = (price - prev) / prev * 100
-
         try:
             name = yf.Ticker(ticker).info.get("longName", ticker)
         except Exception:
             name = ticker
-
-        vol_m = volumes[-1] / 1e6
-        log(f"[{ticker}] OK  ${price:.2f}  {chg_pct:+.2f}%  {len(closes)} bars  vol {vol_m:.1f}M", "ok")
+        log(f"[{ticker}] OK  ${price:.2f}  {chg_pct:+.2f}%  {len(closes)} bars  vol {volumes[-1]/1e6:.1f}M", "ok")
         return dict(ticker=ticker, name=name, price=price,
                     change_pct=chg_pct, closes=closes,
                     volumes=volumes, highs=highs, lows=lows)
@@ -99,90 +92,61 @@ def fetch(ticker):
 
 # ── INDICATORS ────────────────────────────────────────────────────────────────
 def ema(data, period):
-    k = 2 / (period + 1)
-    e = data[0]
-    for v in data[1:]:
-        e = v * k + e * (1 - k)
+    k = 2 / (period + 1); e = data[0]
+    for v in data[1:]: e = v * k + e * (1 - k)
     return e
 
 def rsi(closes, period=14):
-    if len(closes) < period + 1:
-        return 50.0
+    if len(closes) < period + 1: return 50.0
     gains = losses = 0.0
     for i in range(len(closes) - period, len(closes)):
         d = closes[i] - closes[i - 1]
-        if d > 0: gains  += d
+        if d > 0: gains += d
         else:     losses -= d
     return 100 - 100 / (1 + gains / (losses or 1e-9))
 
 def macd(closes):
-    m = ema(closes, 12) - ema(closes, 26)
-    return m, m > 0
+    m = ema(closes, 12) - ema(closes, 26); return m, m > 0
 
 def adx(highs, lows, closes, period=14):
-    if len(closes) < period + 2:
-        return 20.0
-    n = min(len(closes) - 1, period)
-    sp = sm = st = 0.0
+    if len(closes) < period + 2: return 20.0
+    n = min(len(closes) - 1, period); sp = sm = st = 0.0
     for i in range(len(closes) - n, len(closes)):
-        tr = max(highs[i] - lows[i],
-                 abs(highs[i] - closes[i - 1]),
-                 abs(lows[i]  - closes[i - 1]))
-        dp = max(highs[i] - highs[i - 1], 0)
-        dm = max(lows[i - 1] - lows[i], 0)
-        st += tr
-        sp += dp if dp > dm else 0
-        sm += dm if dm > dp else 0
-    pip = (sp / st) * 100
-    mim = (sm / st) * 100
-    return abs(pip - mim) / (pip + mim or 1) * 100
+        tr = max(highs[i]-lows[i], abs(highs[i]-closes[i-1]), abs(lows[i]-closes[i-1]))
+        dp = max(highs[i]-highs[i-1], 0); dm = max(lows[i-1]-lows[i], 0)
+        st += tr; sp += dp if dp > dm else 0; sm += dm if dm > dp else 0
+    pip = (sp/st)*100; mim = (sm/st)*100
+    return abs(pip-mim)/(pip+mim or 1)*100
 
 def rvol(volumes):
-    if len(volumes) < 21:
-        return 1.0
+    if len(volumes) < 21: return 1.0
     avg = sum(volumes[-21:-1]) / 20
     return volumes[-1] / (avg or 1)
 
 def atr(highs, lows, closes, period=14):
-    n = min(len(closes) - 1, period)
-    total = 0.0
-    for i in range(len(closes) - n, len(closes)):
-        total += max(highs[i] - lows[i],
-                     abs(highs[i] - closes[i - 1]),
-                     abs(lows[i]  - closes[i - 1]))
+    n = min(len(closes)-1, period); total = 0.0
+    for i in range(len(closes)-n, len(closes)):
+        total += max(highs[i]-lows[i], abs(highs[i]-closes[i-1]), abs(lows[i]-closes[i-1]))
     return total / n
 
 def bb_squeeze(closes, period=20):
-    if len(closes) < period:
-        return False
-    sl  = closes[-period:]
-    avg = sum(sl) / period
-    std = (sum((v - avg) ** 2 for v in sl) / period) ** 0.5
-    return (2 * std) / avg < 0.05
+    if len(closes) < period: return False
+    sl = closes[-period:]; avg = sum(sl)/period
+    std = (sum((v-avg)**2 for v in sl)/period)**0.5
+    return (2*std)/avg < 0.05
 
 # ── SIGNAL ENGINE ─────────────────────────────────────────────────────────────
 def analyze(data):
-    closes  = data["closes"]
-    volumes = data["volumes"]
-    highs   = data["highs"]
-    lows    = data["lows"]
-    price   = data["price"]
-    chg_pct = data["change_pct"]
+    closes = data["closes"]; volumes = data["volumes"]
+    highs  = data["highs"];  lows    = data["lows"]
+    price  = data["price"];  chg_pct = data["change_pct"]
 
-    e9      = ema(closes, 9)
-    e20     = ema(closes, 20)
-    e50     = ema(closes, 50)
-    rsi_v   = rsi(closes)
-    macd_v, macd_bull = macd(closes)
-    adx_v   = adx(highs, lows, closes)
-    rvol_v  = rvol(volumes)
-    atr_v   = atr(highs, lows, closes)
-    squeeze = bb_squeeze(closes)
-
-    pct20    = (price - e20) / e20 * 100
-    extended = pct20 > 8
-    rsi_bull = 55 <= rsi_v <= 70
-    trend_ok = adx_v > 25
+    e9=ema(closes,9); e20=ema(closes,20); e50=ema(closes,50)
+    rsi_v=rsi(closes); macd_v,macd_bull=macd(closes)
+    adx_v=adx(highs,lows,closes); rvol_v=rvol(volumes)
+    atr_v=atr(highs,lows,closes); squeeze=bb_squeeze(closes)
+    pct20=(price-e20)/e20*100; extended=pct20>8
+    rsi_bull=55<=rsi_v<=70; trend_ok=adx_v>25
 
     score = 30
     if trend_ok:                       score += 15
@@ -200,56 +164,42 @@ def analyze(data):
     score = max(10, min(95, score))
 
     setup = "NEUTRAL"
-    if extended and rsi_v > 70:
-        setup = "EXTENDED"
-    elif squeeze and adx_v < 25:
-        setup = "BB SQUEEZE"
-    elif trend_ok and macd_bull and price > e20:
-        setup = "MOMENTUM CONT."
-    elif chg_pct > 5 and rvol_v > 1.5:
-        setup = "BREAKOUT"
-    elif chg_pct < -3 and price > e50:
-        setup = "PULLBACK ENTRY"
-    elif macd_bull and price > e20:
-        setup = "TREND FOLLOWING"
+    if extended and rsi_v > 70:                   setup = "EXTENDED"
+    elif squeeze and adx_v < 25:                  setup = "BB SQUEEZE"
+    elif trend_ok and macd_bull and price > e20:  setup = "MOMENTUM CONT."
+    elif chg_pct > 5 and rvol_v > 1.5:           setup = "BREAKOUT"
+    elif chg_pct < -3 and price > e50:            setup = "PULLBACK ENTRY"
+    elif macd_bull and price > e20:               setup = "TREND FOLLOWING"
 
-    stop = round(price - 1.5 * atr_v, 2)
-    t1   = round(price + 2.0 * atr_v, 2)
-    t2   = round(price + 3.5 * atr_v, 2)
-    rr   = round((t1 - price) / max(price - stop, 0.01), 1)
+    stop = round(price - 1.5*atr_v, 2)
+    t1   = round(price + 2.0*atr_v, 2)
+    t2   = round(price + 3.5*atr_v, 2)
+    rr   = round((t1-price)/max(price-stop, 0.01), 1)
 
     reasons, risks = [], []
     if adx_v > 35:     reasons.append(f"ADX {adx_v:.0f} — very strong trend")
     elif trend_ok:     reasons.append(f"ADX {adx_v:.0f} — trend confirmed")
     else:              risks.append(f"ADX {adx_v:.0f} — weak trend")
-
     if rvol_v > 2:     reasons.append(f"RVOL {rvol_v:.1f}x — institutional surge")
     elif rvol_v > 1.5: reasons.append(f"RVOL {rvol_v:.1f}x — vol confirms move")
     else:              risks.append(f"RVOL {rvol_v:.1f}x — low volume")
-
     if rsi_bull:       reasons.append(f"RSI {rsi_v:.0f} — ideal bull zone")
     elif rsi_v > 70:   risks.append(f"RSI {rsi_v:.0f} — overbought")
     elif rsi_v < 45:   risks.append(f"RSI {rsi_v:.0f} — bearish momentum")
-
     if macd_bull:      reasons.append("MACD positive")
     else:              risks.append("MACD negative")
-
     if 0 < pct20 <= 5: reasons.append(f"{pct20:.1f}% above 20 EMA — clean structure")
     elif pct20 > 8:    risks.append(f"{pct20:.1f}% above 20 EMA — extended")
-
     if squeeze:        reasons.append("BB squeeze — volatility compression")
 
-    if score >= 65:
-        when = "Enter 9:30-10:00 AM ET open OR Power Hour 3-4 PM ET on volume spike"
-    elif score >= 45:
-        when = "Wait for RVOL > 1.5x before entry. Skip 11:30 AM-2 PM midday chop"
-    else:
-        when = "Low confidence — observe only, skip or wait for stronger setup"
+    when = ("Enter 9:30-10:00 AM ET open OR Power Hour 3-4 PM ET on volume spike"
+            if score >= 65 else
+            "Wait for RVOL > 1.5x before entry. Skip 11:30 AM-2 PM midday chop"
+            if score >= 45 else
+            "Low confidence — observe only, skip or wait for stronger setup")
 
-    macd_label = "BULL" if macd_bull else "BEAR"
-    log(f"[{data['ticker']}] Score {score}/100 | {setup} | "
-        f"ADX {adx_v:.0f} | RSI {rsi_v:.0f} | "
-        f"RVOL {rvol_v:.1f}x | MACD {macd_label}",
+    log(f"[{data['ticker']}] Score {score}/100 | {setup} | ADX {adx_v:.0f} | "
+        f"RSI {rsi_v:.0f} | RVOL {rvol_v:.1f}x | MACD {'BULL' if macd_bull else 'BEAR'}",
         "ok" if score >= 65 else "warn" if score >= 45 else "err")
 
     return dict(
@@ -265,14 +215,11 @@ def analyze(data):
 
 # ── REGIME ────────────────────────────────────────────────────────────────────
 def regime_data():
-    """Fetch SPY/QQQ/VIX and return plain dict (used by both CLI and API)."""
     results = {}
     for sym in ["SPY", "QQQ", "^VIX"]:
         d = fetch(sym)
-        if d:
-            results[sym] = d
-    if len(results) < 3:
-        return None
+        if d: results[sym] = d
+    if len(results) < 3: return None
     return {
         "spy": {"price": results["SPY"]["price"],  "changePct": results["SPY"]["change_pct"]},
         "qqq": {"price": results["QQQ"]["price"],  "changePct": results["QQQ"]["change_pct"]},
@@ -280,94 +227,66 @@ def regime_data():
     }
 
 def market_regime():
-    """Return coloured regime string for terminal output."""
     log("Fetching market regime (SPY, QQQ, VIX)...", "info")
     rd = regime_data()
-    if not rd:
-        return "UNKNOWN"
-    spy_up  = rd["spy"]["changePct"] > 0
-    qqq_up  = rd["qqq"]["changePct"] > 0
-    vix_val = rd["vix"]["price"]
-    if spy_up and qqq_up and vix_val < 20:
-        return green("RISK ON") + f"  — Long setups preferred. VIX {vix_val:.1f}"
-    elif vix_val < 25:
-        return yellow("NEUTRAL") + f" — Selective only. VIX {vix_val:.1f}"
+    if not rd: return "UNKNOWN"
+    vix = rd["vix"]["price"]
+    if rd["spy"]["changePct"] > 0 and rd["qqq"]["changePct"] > 0 and vix < 20:
+        return green("RISK ON") + f"  — Long setups preferred. VIX {vix:.1f}"
+    elif vix < 25:
+        return yellow("NEUTRAL") + f" — Selective only. VIX {vix:.1f}"
     else:
-        return red("RISK OFF") + f" — Avoid new longs. VIX {vix_val:.1f}"
+        return red("RISK OFF") + f" — Avoid new longs. VIX {vix:.1f}"
 
 # ── TERMINAL DISPLAY ──────────────────────────────────────────────────────────
 def conf_bar(score, width=20):
-    filled = int(score / 100 * width)
-    bar    = "█" * filled + "░" * (width - filled)
-    if score >= 65: return green(bar)
-    if score >= 45: return yellow(bar)
-    return red(bar)
+    filled = int(score/100*width)
+    bar = "█"*filled + "░"*(width-filled)
+    return green(bar) if score>=65 else yellow(bar) if score>=45 else red(bar)
 
 def print_card(a, rank):
     chg_str  = f"{a['change_pct']:+.2f}%"
     chg_col  = green(chg_str) if a["change_pct"] >= 0 else red(chg_str)
     rank_line = bold(f"#{rank}  {a['ticker']}") + "  " + dim(a["name"])
-
     print()
     print(f"  {'─'*62}")
     print(f"  {rank_line}")
     print(f"  {cyan(a['setup'])}    ${a['price']:.2f}  {chg_col} today")
     print(f"  {'─'*62}")
-
-    adx_c  = green(f"{a['adx']:.0f}")    if a["adx"] > 25   else yellow(f"{a['adx']:.0f}")
-    rsi_c  = (red if a["rsi"] > 70 else green if a["rsi"] >= 55 else dim)(f"{a['rsi']:.0f}")
+    adx_c  = green(f"{a['adx']:.0f}")    if a["adx"]  > 25  else yellow(f"{a['adx']:.0f}")
+    rsi_c  = (red if a["rsi"]>70 else green if a["rsi"]>=55 else dim)(f"{a['rsi']:.0f}")
     rvol_c = green(f"{a['rvol']:.1f}x")  if a["rvol"] > 1.5 else dim(f"{a['rvol']:.1f}x")
     macd_c = green(f"▲{a['macd']:.1f}")  if a["macd_bull"]  else red(f"▼{abs(a['macd']):.1f}")
-    pct_c  = green(f"+{a['pct20']:.1f}%") if a["pct20"] >= 0 else red(f"{a['pct20']:.1f}%")
+    pct_c  = green(f"+{a['pct20']:.1f}%") if a["pct20"]>= 0 else red(f"{a['pct20']:.1f}%")
     sqz    = yellow("SQUEEZE") if a["squeeze"] else dim("no squeeze")
-
     print(f"  ADX {adx_c}  RSI {rsi_c}  RVOL {rvol_c}  "
           f"MACD {macd_c}  vs20EMA {pct_c}  ATR ${a['atr']:.2f}  {sqz}")
-
-    entry_s = dim(f"${a['price']:.2f}")
-    stop_s  = red(f"${a['stop']:.2f}")
-    t1_s    = green(f"${a['t1']:.2f}")
-    t2_s    = green(f"${a['t2']:.2f}")
-    rr_s    = cyan(f"1:{a['rr']}")
-
+    entry_s=dim(f"${a['price']:.2f}"); stop_s=red(f"${a['stop']:.2f}")
+    t1_s=green(f"${a['t1']:.2f}"); t2_s=green(f"${a['t2']:.2f}"); rr_s=cyan(f"1:{a['rr']}")
     print(f"\n  {'ENTRY':>10}  {'STOP':>10}  {'TARGET 1':>10}  {'TARGET 2':>10}  {'R:R':>6}")
     print(f"  {entry_s:>10}  {stop_s:>10}  {t1_s:>10}  {t2_s:>10}  {rr_s:>6}")
     print(f"\n  CONFIDENCE  {conf_bar(a['score'])}  {bold(str(a['score']))}/100")
-
-    if a["reasons"]:
-        print(f"\n  {green('WHY:')}   {dim('  ·  '.join(a['reasons']))}")
-    if a["risks"]:
-        print(f"  {red('RISKS:')}  {dim('  ·  '.join(a['risks']))}")
+    if a["reasons"]: print(f"\n  {green('WHY:')}   {dim('  ·  '.join(a['reasons']))}")
+    if a["risks"]:   print(f"  {red('RISKS:')}  {dim('  ·  '.join(a['risks']))}")
     print(f"  {yellow('WHEN:')}   {a['when']}")
 
 def print_summary_table(results):
     rows = []
-    for i, a in enumerate(results):
-        rows.append([
-            f"#{i+1}  {a['ticker']}",
-            a["setup"],
-            f"${a['price']:.2f}",
-            f"{a['change_pct']:+.2f}%",
-            f"{a['adx']:.0f}",
-            f"{a['rsi']:.0f}",
-            f"{a['rvol']:.1f}x",
-            "BULL" if a["macd_bull"] else "BEAR",
-            f"${a['stop']}",
-            f"${a['t1']}",
-            f"{a['score']}/100",
-        ])
-    headers = ["TICKER","SETUP","PRICE","CHG","ADX","RSI","RVOL","MACD","STOP","T1","SCORE"]
+    for i,a in enumerate(results):
+        rows.append([f"#{i+1}  {a['ticker']}", a["setup"],
+                     f"${a['price']:.2f}", f"{a['change_pct']:+.2f}%",
+                     f"{a['adx']:.0f}", f"{a['rsi']:.0f}", f"{a['rvol']:.1f}x",
+                     "BULL" if a["macd_bull"] else "BEAR",
+                     f"${a['stop']}", f"${a['t1']}", f"{a['score']}/100"])
+    headers=["TICKER","SETUP","PRICE","CHG","ADX","RSI","RVOL","MACD","STOP","T1","SCORE"]
     print("\n" + tabulate(rows, headers=headers, tablefmt="simple"))
 
 def print_timing_guide():
-    best  = green("9:30-10:30 AM ET")
-    chop  = yellow("11:30 AM-2 PM ET")
-    power = cyan("3:00-4:00 PM ET ")
     print(f"""
   ┌──────────────────────────────────────────────────────────────┐
-  │  {best}   BEST WINDOW — highest volume, enter breakouts  │
-  │  {chop}   MIDDAY CHOP — avoid new entries, monitor only  │
-  │  {power}   POWER HOUR  — trail stops or exit positions   │
+  │  {green('9:30-10:30 AM ET')}   BEST WINDOW — highest volume, enter breakouts  │
+  │  {yellow('11:30 AM-2 PM ET')}  MIDDAY CHOP — avoid new entries, monitor only  │
+  │  {cyan('3:00-4:00 PM ET ')}   POWER HOUR  — trail stops or exit positions   │
   └──────────────────────────────────────────────────────────────┘""")
 
 # ── TERMINAL SCAN LOOP ────────────────────────────────────────────────────────
@@ -378,77 +297,118 @@ def run(tickers, watch=False):
         print(f"  {bold('MOMENTUM / SCAN')}  {dim(now)}")
         print(f"{'═'*64}")
         print_timing_guide()
-
-        regime = market_regime()
-        print(f"\n  MARKET REGIME:  {regime}\n")
+        print(f"\n  MARKET REGIME:  {market_regime()}\n")
         print(f"  {'─'*62}")
         print(f"  Scanning: {', '.join(tickers)}")
         print(f"  {'─'*62}")
-
         raw_data = [d for d in (fetch(t) for t in tickers) if d]
-
         if not raw_data:
-            print(red("\n  All fetches failed. Check internet connection.\n"))
-            if not watch:
-                break
-            time.sleep(300)
-            continue
-
-        results = sorted([analyze(d) for d in raw_data],
-                         key=lambda x: x["score"], reverse=True)
-
-        failed     = len(tickers) - len(raw_data)
-        failed_str = red(str(failed)) if failed else dim("0")
-        print(f"\n  {green(str(len(results)))} analyzed  {failed_str} failed\n")
-
+            print(red("\n  All fetches failed.\n"))
+            if not watch: break
+            time.sleep(300); continue
+        results = sorted([analyze(d) for d in raw_data], key=lambda x: x["score"], reverse=True)
+        failed  = len(tickers) - len(raw_data)
+        print(f"\n  {green(str(len(results)))} analyzed  {red(str(failed)) if failed else dim('0')} failed\n")
         print_summary_table(results)
-        for i, a in enumerate(results, 1):
-            print_card(a, i)
-
+        for i,a in enumerate(results,1): print_card(a,i)
         print(f"\n  {'═'*62}")
         print(f"  {dim('Not financial advice. Use stop-losses. Manage risk.')}")
         print(f"  {'═'*62}\n")
-
-        if not watch:
-            break
-        print(f"\n  {dim('Next scan in 5 minutes... (Ctrl+C to stop)')}\n")
+        if not watch: break
+        print(f"\n  {dim('Next scan in 5 minutes...')}\n")
         time.sleep(300)
 
 # ── FLASK API SERVER ──────────────────────────────────────────────────────────
 def serve(port=5000):
     try:
-        from flask import Flask, jsonify, request
+        from flask import Flask, jsonify, request, abort
         from flask_cors import CORS
     except ImportError:
-        print(red("\n  Flask not installed."))
-        print("  Run:  pip install flask flask-cors\n")
+        print(red("\n  Run:  pip install flask flask-cors\n"))
         sys.exit(1)
 
-    app = Flask(__name__)
-    CORS(app)
+    # ── API key auth ──────────────────────────────────────────────────────────
+    # Set API_KEY env var before starting. Generate one with:
+    #   python -c "import secrets; print(secrets.token_urlsafe(32))"
+    API_KEY = os.environ.get("API_KEY", "")
+    if not API_KEY:
+        print(yellow("\n  ⚠  WARNING: API_KEY env var not set. Server is UNPROTECTED."))
+        print(   "     Generate one:  python -c \"import secrets; print(secrets.token_urlsafe(32))\"")
+        print(   "     Then:          export API_KEY=your_key_here\n")
 
-    # ── GET /api/quote?ticker=FLEX ──────────────────────────────────────────
+    # Allowed origins — set ALLOWED_ORIGINS=https://yoursite.com in env
+    raw_origins = os.environ.get("ALLOWED_ORIGINS", "*")
+    origins = [o.strip() for o in raw_origins.split(",")] if raw_origins != "*" else "*"
+
+    app = Flask(__name__)
+    CORS(app, origins=origins)
+
+    def require_api_key(f):
+        """Decorator: validate Bearer token or ?api_key= query param."""
+        @functools.wraps(f)
+        def decorated(*args, **kwargs):
+            if not API_KEY:          # no key set → allow all (dev mode)
+                return f(*args, **kwargs)
+            # Check Authorization header
+            auth = request.headers.get("Authorization", "")
+            token = auth.removeprefix("Bearer ").strip() if auth.startswith("Bearer ") else ""
+            # Fallback: check query param
+            if not token:
+                token = request.args.get("api_key", "")
+            import hmac
+            if not hmac.compare_digest(token, API_KEY):
+                abort(401, description="Invalid or missing API key")
+            return f(*args, **kwargs)
+        return decorated
+
+    @app.errorhandler(401)
+    def unauthorized(e):
+        return jsonify({"error": "Unauthorized", "message": str(e.description)}), 401
+
+    @app.errorhandler(400)
+    def bad_request(e):
+        return jsonify({"error": "Bad request", "message": str(e.description)}), 400
+
+    # ── routes ────────────────────────────────────────────────────────────────
+    @app.route("/")
+    def index():
+        return jsonify({
+            "service": "Momentum Screener API",
+            "version": "1.0.0",
+            "auth": "Bearer token required (Authorization: Bearer YOUR_API_KEY)",
+            "endpoints": {
+                "quote":  "/api/quote?ticker=FLEX",
+                "regime": "/api/regime",
+                "scan":   "/api/scan?tickers=FLEX,AMD,JBL  OR  ?preset=watchlist",
+            }
+        })
+
+    @app.route("/health")
+    def health():
+        # Public — no auth needed. Render uses this for uptime checks.
+        return jsonify({"status": "ok", "timestamp": datetime.utcnow().isoformat()})
+
     @app.route("/api/quote")
+    @require_api_key
     def api_quote():
         ticker = request.args.get("ticker", "").upper().strip()
         if not ticker:
-            return jsonify({"error": "ticker param required"}), 400
+            abort(400, "ticker param required")
         data = fetch(ticker)
         if not data:
             return jsonify({"error": f"Could not fetch {ticker}"}), 500
         return jsonify(analyze(data))
 
-    # ── GET /api/regime ─────────────────────────────────────────────────────
     @app.route("/api/regime")
+    @require_api_key
     def api_regime():
         rd = regime_data()
         if not rd:
             return jsonify({"error": "regime fetch failed"}), 500
         return jsonify(rd)
 
-    # ── GET /api/scan?tickers=FLEX,AMD,JBL ─────────────────────────────────
-    # ── GET /api/scan?preset=watchlist      ─────────────────────────────────
     @app.route("/api/scan")
+    @require_api_key
     def api_scan():
         preset = request.args.get("preset", "").strip()
         raw    = request.args.get("tickers", "").strip()
@@ -457,55 +417,44 @@ def serve(port=5000):
         elif raw:
             tickers = [t.strip().upper() for t in raw.split(",") if t.strip()]
         else:
-            return jsonify({"error": "pass ?tickers=FLEX,AMD or ?preset=watchlist"}), 400
-
+            abort(400, "pass ?tickers=FLEX,AMD or ?preset=watchlist")
         results = []
         for t in tickers:
             d = fetch(t)
-            if d:
-                results.append(analyze(d))
+            if d: results.append(analyze(d))
         results.sort(key=lambda x: x["score"], reverse=True)
         return jsonify(results)
 
-    # ── startup banner ──────────────────────────────────────────────────────
+    # ── startup banner ────────────────────────────────────────────────────────
     print(f"\n{'═'*64}")
     print(f"  {bold('MOMENTUM SCREENER — API SERVER')}")
     print(f"{'═'*64}")
-    print(f"\n  {green('Routes registered:')}")
-    print(f"  {cyan('GET')}  http://localhost:{port}/api/quote?ticker=FLEX")
-    print(f"  {cyan('GET')}  http://localhost:{port}/api/regime")
-    print(f"  {cyan('GET')}  http://localhost:{port}/api/scan?tickers=FLEX,AMD,JBL")
-    print(f"  {cyan('GET')}  http://localhost:{port}/api/scan?preset=watchlist")
-    print(f"\n  {dim('Set USE_PYTHON_API = true in momentum-screener.html')}")
-    print(f"  {dim('Press Ctrl+C to stop.')}\n")
+    print(f"\n  {green('Auth:')}    {'API key required (Bearer token)' if API_KEY else red('UNPROTECTED — set API_KEY env var')}")
+    print(f"  {green('Origins:')} {origins}")
+    print(f"\n  {green('Routes:')}")
+    print(f"  {cyan('GET')}  http://0.0.0.0:{port}/health                        (public)")
+    print(f"  {cyan('GET')}  http://0.0.0.0:{port}/api/quote?ticker=FLEX         (auth)")
+    print(f"  {cyan('GET')}  http://0.0.0.0:{port}/api/regime                    (auth)")
+    print(f"  {cyan('GET')}  http://0.0.0.0:{port}/api/scan?preset=watchlist     (auth)")
+    print(f"\n  {dim('Press Ctrl+C to stop.')}\n")
 
     app.run(host="0.0.0.0", port=port, debug=False)
 
-# ── CLI ENTRY POINT ───────────────────────────────────────────────────────────
+# ── CLI ───────────────────────────────────────────────────────────────────────
 def main():
-    parser = argparse.ArgumentParser(
-        description="Momentum Screener — multi-factor swing & intraday signal engine"
-    )
-    parser.add_argument("tickers", nargs="*",
-                        help="Ticker symbols e.g. FLEX AMD JBL")
-    parser.add_argument("--preset", choices=list(PRESETS.keys()),
-                        default="watchlist",
-                        help="Preset watchlist (default: watchlist)")
-    parser.add_argument("--watch",  action="store_true",
-                        help="Auto-refresh every 5 minutes")
-    parser.add_argument("--serve",  action="store_true",
-                        help="Start Flask API server on port 5000")
-    parser.add_argument("--port",   type=int, default=5000,
-                        help="Port for --serve mode (default: 5000)")
+    parser = argparse.ArgumentParser(description="Momentum Screener")
+    parser.add_argument("tickers", nargs="*")
+    parser.add_argument("--preset", choices=list(PRESETS.keys()), default="watchlist")
+    parser.add_argument("--watch",  action="store_true")
+    parser.add_argument("--serve",  action="store_true")
+    parser.add_argument("--port",   type=int, default=int(os.environ.get("PORT", 5000)))
     args = parser.parse_args()
 
     if args.serve:
         serve(port=args.port)
         return
 
-    tickers = ([t.upper() for t in args.tickers]
-               if args.tickers else PRESETS[args.preset])
-
+    tickers = [t.upper() for t in args.tickers] if args.tickers else PRESETS[args.preset]
     try:
         run(tickers, watch=args.watch)
     except KeyboardInterrupt:
