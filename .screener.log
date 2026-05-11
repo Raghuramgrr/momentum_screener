@@ -11,6 +11,9 @@
   GET  http://localhost:5000/api/quote?ticker=FLEX         (auth)
   GET  http://localhost:5000/api/regime                    (auth)
   GET  http://localhost:5000/api/scan?preset=watchlist     (auth)
+  GET  http://0.0.0.0:5000/api/magic?market=both&top=5   (auth)
+  GET  http://0.0.0.0:5000/api/magic?market=us&top=5     (auth)
+  GET  http://0.0.0.0:5000/api/magic?market=sg&top=5     (auth)
 
   Press Ctrl+C to stop.
 
@@ -21,39 +24,274 @@ WARNING: This is a development server. Do not use it in a production deployment.
  * Running on http://127.0.0.1:5000
  * Running on http://172.27.180.232:5000
 Press CTRL+C to quit
-127.0.0.1 - - [11/May/2026 13:25:36] "GET /health HTTP/1.1" 200 -
-127.0.0.1 - - [11/May/2026 13:25:36] "GET / HTTP/1.1" 200 -
-  13:25:37  ·  [SPY] Fetching...
-  13:25:37  ·  [FLEX] Fetching...
-  13:25:37  ·  [AMD] Fetching...
-  13:25:37  13:25:37      13:25:37  ·  [COCO] Fetching...
-·  [JBL] Fetching...
-·  [MPC] Fetching...
+127.0.0.1 - - [11/May/2026 17:42:04] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [11/May/2026 17:42:04] "GET / HTTP/1.1" 200 -
+  17:42:05  ·  [SPY] Fetching...
+  17:42:05  ✓  [SPY] OK  $737.62  +0.83%  65 bars  vol 47.2M
+  17:42:05  ·  [QQQ] Fetching...
+  17:42:05  ·    [FLEX] Fetching...
+17:42:05  ·  [AMD] Fetching...
+  17:42:05  ·  [JBL] Fetching...
+    17:42:0517:42:05  ·  [MPC] Fetching...
+  ·  [COCO] Fetching...
+  17:42:06  ✓  [QQQ] OK  $711.23  +2.34%  65 bars  vol 44.1M
+  17:42:06  ·  [^VIX] Fetching...
+  17:42:06  ✓  [FLEX] OK  $142.17  +6.89%  65 bars  vol 10.3M
+  17:42:06  ✓  [FLEX] Score 75/100 | EXTENDED | ADX 87 | RSI 91 | RVOL 2.0x | MACD BULL
+127.0.0.1 - - [11/May/2026 17:42:06] "GET /api/quote?ticker=FLEX HTTP/1.1" 200 -
 HTTP Error 401: {"finance":{"result":null,"error":{"code":"Unauthorized","description":"User is unable to access this feature - https://bit.ly/yahoo-finance-api-feedback"}}}
-  13:25:42  ✓  [SPY] OK  $737.62  +0.83%  65 bars  vol 47.2M
-  13:25:42  ·  [QQQ] Fetching...
+  17:42:06  ✓  [AMD] OK  $455.19  +11.44%  65 bars  vol 57.7M
+  17:42:06  ⚠  [AMD] Score 55/100 | EXTENDED | ADX 70 | RSI 81 | RVOL 1.3x | MACD BULL
+127.0.0.1 - - [11/May/2026 17:42:06] "GET /api/quote?ticker=AMD HTTP/1.1" 200 -
+HTTP Error 401: {"finance":{"result":null,"error":{"code":"Unauthorized","description":"Invalid Crumb"}}}
+  17:42:06  ✓  [JBL] OK  $355.15  +1.59%  65 bars  vol 1.3M
+  17:42:06  ✓  [JBL] Score 85/100 | MOMENTUM CONT. | ADX 40 | RSI 62 | RVOL 1.1x | MACD BULL
+127.0.0.1 - - [11/May/2026 17:42:06] "GET /api/quote?ticker=JBL HTTP/1.1" 200 -
+  17:42:06  ·    [U96.SI] Fetching...17:42:06
+  ·  [D05.SI] Fetching...  17:42:06  ·  [G92.SI] Fetching...
+
+  17:42:06    17:42:06  ··  [BN4.SI] Fetching...  [1F2.SI] Fetching...
+
 HTTP Error 401: {"finance":{"result":null,"error":{"code":"Unauthorized","description":"Invalid Crumb"}}}
 HTTP Error 401: {"finance":{"result":null,"error":{"code":"Unauthorized","description":"User is unable to access this feature - https://bit.ly/yahoo-finance-api-feedback"}}}
-  13:25:45  ✓  [FLEX] OK  $142.17  +6.89%  65 bars  vol 10.3M
-  13:25:45  ✓  [FLEX] Score 75/100 | EXTENDED | ADX 87 | RSI 91 | RVOL 2.0x | MACD BULL
-127.0.0.1 - - [11/May/2026 13:25:45] "GET /api/quote?ticker=FLEX HTTP/1.1" 200 -
-HTTP Error 401: {"finance":{"result":null,"error":{"code":"Unauthorized","description":"Invalid Crumb"}}}
-  13:25:45  ✓  [AMD] OK  $455.19  +11.44%  65 bars  vol 57.7M
-  13:25:45  ⚠  [AMD] Score 55/100 | EXTENDED | ADX 70 | RSI 81 | RVOL 1.3x | MACD BULL
-127.0.0.1 - - [11/May/2026 13:25:45] "GET /api/quote?ticker=AMD HTTP/1.1" 200 -
+  17:42:07  ✓  [MPC] OK  $244.87  +1.08%  65 bars  vol 2.6M
+  17:42:07  ✓  [MPC] Score 80/100 | MOMENTUM CONT. | ADX 46 | RSI 71 | RVOL 1.2x | MACD BULL
+127.0.0.1 - - [11/May/2026 17:42:07] "GET /api/quote?ticker=MPC HTTP/1.1" 200 -
 HTTP Error 401: {"finance":{"result":null,"error":{"code":"Unauthorized","description":"User is unable to access this feature - https://bit.ly/yahoo-finance-api-feedback"}}}
-  13:25:46  ✓  [COCO] OK  $71.60  +4.98%  65 bars  vol 1.7M
-  13:25:46  ⚠  [COCO] Score 55/100 | EXTENDED | ADX 92 | RSI 92 | RVOL 1.1x | MACD BULL
-127.0.0.1 - - [11/May/2026 13:25:46] "GET /api/quote?ticker=COCO HTTP/1.1" 200 -
-HTTP Error 401: {"finance":{"result":null,"error":{"code":"Unauthorized","description":"User is unable to access this feature - https://bit.ly/yahoo-finance-api-feedback"}}}
-  13:25:48  ✓  [MPC] OK  $244.87  +1.08%  65 bars  vol 2.6M
-  13:25:48  ✓  [MPC] Score 80/100 | MOMENTUM CONT. | ADX 46 | RSI 71 | RVOL 1.2x | MACD BULL
-127.0.0.1 - - [11/May/2026 13:25:48] "GET /api/quote?ticker=MPC HTTP/1.1" 200 -
-  13:25:48  ✓  [JBL] OK  $355.15  +1.59%  65 bars  vol 1.3M
-  13:25:48  ✓  [JBL] Score 85/100 | MOMENTUM CONT. | ADX 40 | RSI 62 | RVOL 1.1x | MACD BULL
-127.0.0.1 - - [11/May/2026 13:25:48] "GET /api/quote?ticker=JBL HTTP/1.1" 200 -
+  17:42:07  ✓  [COCO] OK  $71.60  +4.98%  65 bars  vol 1.7M
+  17:42:07  ⚠  [COCO] Score 55/100 | EXTENDED | ADX 92 | RSI 92 | RVOL 1.1x | MACD BULL
+127.0.0.1 - - [11/May/2026 17:42:07] "GET /api/quote?ticker=COCO HTTP/1.1" 200 -
+  17:42:07  ✓  [U96.SI] OK  $6.18  -2.68%  64 bars  vol 9.4M
+  17:42:07  ✓  [U96.SI] Score 65/100 | NEUTRAL | ADX 67 | RSI 13 | RVOL 2.0x | MACD BEAR
+127.0.0.1 - - [11/May/2026 17:42:07] "GET /api/quote?ticker=U96.SI HTTP/1.1" 200 -
+  17:42:07  ✓  [^VIX] OK  $18.12  +5.41%  63 bars  vol 0.0M
+127.0.0.1 - - [11/May/2026 17:42:07] "GET /api/regime HTTP/1.1" 200 -
+  17:42:08  ✓  [G92.SI] OK  $1.98  -3.43%  64 bars  vol 2.7M
+  17:42:08  ✓  [G92.SI] Score 70/100 | BB SQUEEZE | ADX 4 | RSI 46 | RVOL 1.9x | MACD BULL
+127.0.0.1 - - [11/May/2026 17:42:08] "GET /api/quote?ticker=G92.SI HTTP/1.1" 200 -
+  17:42:08  ✓  [D05.SI] OK  $58.77  +1.56%  64 bars  vol 8.8M
+  17:42:08  ✓  [D05.SI] Score 95/100 | MOMENTUM CONT. | ADX 50 | RSI 75 | RVOL 1.7x | MACD BULL
+127.0.0.1 - - [11/May/2026 17:42:08] "GET /api/quote?ticker=D05.SI HTTP/1.1" 200 -
+  17:42:09  ✓  [1F2.SI] OK  $0.47  -2.06%  64 bars  vol 0.6M
+  17:42:09  ✓  [1F2.SI] Score 70/100 | BB SQUEEZE | ADX 13 | RSI 55 | RVOL 1.3x | MACD BULL
+127.0.0.1 - - [11/May/2026 17:42:09] "GET /api/quote?ticker=1F2.SI HTTP/1.1" 200 -
+  17:42:09  ✓  [BN4.SI] OK  $10.91  -0.27%  64 bars  vol 2.9M
+  17:42:09  ⚠  [BN4.SI] Score 50/100 | NEUTRAL | ADX 41 | RSI 31 | RVOL 0.6x | MACD BEAR
+127.0.0.1 - - [11/May/2026 17:42:09] "GET /api/quote?ticker=BN4.SI HTTP/1.1" 200 -
+  17:42:11  ·  [U96.SI] Fetching...
+    17:42:11  17:42:11    17:42:11  17:42:1117:42:11  ·    [O39.SI] Fetching...  ·    ·  [S68.SI] Fetching...  [C6L.SI] Fetching...17:42:11  
+17:42:11  ·  [Z74.SI] Fetching...·  [1F2.SI] Fetching...·
+  
+  [G92.SI] Fetching...
+
+·  [D05.SI] Fetching...  17:42:11
+  ·  [BN4.SI] Fetching...
+
 HTTP Error 401: {"finance":{"result":null,"error":{"code":"Unauthorized","description":"Invalid Crumb"}}}
-  13:25:50  ✓  [QQQ] OK  $711.23  +2.34%  65 bars  vol 44.1M
-  13:25:50  ·  [^VIX] Fetching...
-  13:25:54  ✓  [^VIX] OK  $17.19  +0.64%  63 bars  vol 0.0M
-127.0.0.1 - - [11/May/2026 13:25:54] "GET /api/regime HTTP/1.1" 200 -
+  17:42:12  ✓  [U96.SI] OK  $6.18  -2.68%  64 bars  vol 9.4M
+  17:42:12  ✓  [U96.SI] Score 65/100 | NEUTRAL | ADX 67 | RSI 13 | RVOL 2.0x | MACD BEAR
+127.0.0.1 - - [11/May/2026 17:42:12] "GET /api/quote?ticker=U96.SI HTTP/1.1" 200 -
+  17:42:12  ·  [U11.SI] Fetching...
+  17:42:12  ✓  [Z74.SI] OK  $4.75  +1.28%  64 bars  vol 23.4M
+  17:42:12  ⚠  [Z74.SI] Score 50/100 | BB SQUEEZE | ADX 15 | RSI 44 | RVOL 0.6x | MACD BEAR
+127.0.0.1 - - [11/May/2026 17:42:12] "GET /api/quote?ticker=Z74.SI HTTP/1.1" 200 -
+  17:42:12  ✓  [S68.SI] OK  $20.96  +0.24%  64 bars  vol 2.4M
+  17:42:12  ✓  [S68.SI] Score 75/100 | NEUTRAL | ADX 43 | RSI 38 | RVOL 1.0x | MACD BULL
+127.0.0.1 - - [11/May/2026 17:42:12] "GET /api/quote?ticker=S68.SI HTTP/1.1" 200 -
+  17:42:13  ✓  [1F2.SI] OK  $0.47  -2.06%  64 bars  vol 0.6M
+  17:42:13  ✓  [1F2.SI] Score 70/100 | BB SQUEEZE | ADX 13 | RSI 55 | RVOL 1.3x | MACD BULL
+127.0.0.1 - - [11/May/2026 17:42:13] "GET /api/quote?ticker=1F2.SI HTTP/1.1" 200 -
+  17:42:13  ✓  [D05.SI] OK  $58.77  +1.56%  64 bars  vol 8.8M
+  17:42:13  ✓  [D05.SI] Score 95/100 | MOMENTUM CONT. | ADX 50 | RSI 75 | RVOL 1.7x | MACD BULL
+127.0.0.1 - - [11/May/2026 17:42:13] "GET /api/quote?ticker=D05.SI HTTP/1.1" 200 -
+  17:42:13  ✓  [O39.SI] OK  $22.50  +2.65%  64 bars  vol 13.7M
+  17:42:13  ✓  [O39.SI] Score 95/100 | MOMENTUM CONT. | ADX 33 | RSI 61 | RVOL 2.1x | MACD BULL
+127.0.0.1 - - [11/May/2026 17:42:13] "GET /api/quote?ticker=O39.SI HTTP/1.1" 200 -
+  17:42:13  ✓  [G92.SI] OK  $1.98  -3.43%  64 bars  vol 2.7M
+  17:42:13  ✓  [G92.SI] Score 70/100 | BB SQUEEZE | ADX 4 | RSI 46 | RVOL 1.9x | MACD BULL
+127.0.0.1 - - [11/May/2026 17:42:13] "GET /api/quote?ticker=G92.SI HTTP/1.1" 200 -
+  17:42:14  ✓  [BN4.SI] OK  $10.91  -0.27%  64 bars  vol 2.9M
+  17:42:14  ⚠  [BN4.SI] Score 50/100 | NEUTRAL | ADX 41 | RSI 31 | RVOL 0.6x | MACD BEAR
+127.0.0.1 - - [11/May/2026 17:42:14] "GET /api/quote?ticker=BN4.SI HTTP/1.1" 200 -
+  17:42:14  ✓  [C6L.SI] OK  $6.26  -0.79%  64 bars  vol 5.8M
+  17:42:14  ⚠  [C6L.SI] Score 60/100 | NEUTRAL | ADX 40 | RSI 17 | RVOL 0.9x | MACD BEAR
+127.0.0.1 - - [11/May/2026 17:42:14] "GET /api/quote?ticker=C6L.SI HTTP/1.1" 200 -
+  17:42:14  ✓  [U11.SI] OK  $36.99  +1.18%  64 bars  vol 4.7M
+  17:42:14  ✓  [U11.SI] Score 90/100 | BB SQUEEZE | ADX 12 | RSI 56 | RVOL 1.9x | MACD BULL
+127.0.0.1 - - [11/May/2026 17:42:14] "GET /api/quote?ticker=U11.SI HTTP/1.1" 200 -
+  17:42:21  ·  [MAGIC] Scanning 56 stocks in universe: BOTH
+  17:42:21  ·  [NVDA] Fetching...
+  17:42:21  ✓  [NVDA] OK  $215.20  +1.75%  65 bars  vol 136.1M
+  17:42:21  ·  [AMD] Fetching...
+  17:42:22  ✓  [AMD] OK  $455.19  +11.44%  65 bars  vol 57.7M
+  17:42:22  ·  [MSFT] Fetching...
+  17:42:22  ✓  [MSFT] OK  $415.12  -1.34%  65 bars  vol 33.3M
+  17:42:22  ·  [AAPL] Fetching...
+  17:42:23  ✓  [AAPL] OK  $293.32  +2.05%  65 bars  vol 52.6M
+  17:42:23  ·  [AMZN] Fetching...
+  17:42:24  ✓  [AMZN] OK  $272.68  +0.56%  65 bars  vol 34.7M
+  17:42:24  ·  [META] Fetching...
+  17:42:24  ✓  [META] OK  $609.63  -1.16%  65 bars  vol 13.5M
+  17:42:24  ·  [GOOGL] Fetching...
+  17:42:25  ✓  [GOOGL] OK  $400.80  +0.71%  65 bars  vol 21.4M
+  17:42:25  ·  [TSLA] Fetching...
+  17:42:25  ✓  [TSLA] OK  $428.35  +4.02%  65 bars  vol 64.9M
+  17:42:25  ·  [NFLX] Fetching...
+  17:42:26  ✓  [NFLX] OK  $87.49  -0.86%  65 bars  vol 36.1M
+  17:42:26  ·  [PLTR] Fetching...
+  17:42:27  ✓  [PLTR] OK  $137.80  +0.55%  65 bars  vol 41.6M
+  17:42:27  ·  [SMCI] Fetching...
+  17:42:28  ✓  [SMCI] OK  $35.37  +5.21%  65 bars  vol 50.4M
+  17:42:28  ·  [FLEX] Fetching...
+  17:42:28  ✓  [FLEX] OK  $142.17  +6.89%  65 bars  vol 10.3M
+  17:42:28  ·  [JBL] Fetching...
+  17:42:28  ✓  [JBL] OK  $355.15  +1.59%  65 bars  vol 1.3M
+  17:42:28  ·  [DELL] Fetching...
+  17:42:29  ✓  [DELL] OK  $260.46  +13.11%  65 bars  vol 12.1M
+  17:42:29  ·  [HPE] Fetching...
+  17:42:30  ✓  [HPE] OK  $31.35  +5.56%  65 bars  vol 17.5M
+  17:42:30  ·  [ARM] Fetching...
+  17:42:30  ✓  [ARM] OK  $213.27  -0.02%  65 bars  vol 11.5M
+  17:42:30  ·  [AVGO] Fetching...
+  17:42:31  ✓  [AVGO] OK  $430.00  +4.23%  65 bars  vol 22.5M
+  17:42:31  ·  [MARA] Fetching...
+  17:42:31  ✓  [MARA] OK  $12.94  +1.89%  65 bars  vol 48.3M
+  17:42:31  ·  [RIOT] Fetching...
+  17:42:32  ✓  [RIOT] OK  $24.08  -0.12%  65 bars  vol 17.8M
+  17:42:32  ·  [CLSK] Fetching...
+  17:42:32  ✓  [CLSK] OK  $14.20  +1.57%  65 bars  vol 15.8M
+  17:42:32  ·  [BITF] Fetching...
+  17:42:33  ✓  [BITF] OK  $3.97  -1.00%  65 bars  vol 30.6M
+  17:42:33  ·  [HIVE] Fetching...
+  17:42:33  ✓  [HIVE] OK  $2.82  -1.74%  65 bars  vol 11.5M
+  17:42:33  ·  [WULF] Fetching...
+  17:42:34  ✓  [WULF] OK  $23.39  -2.62%  65 bars  vol 36.2M
+  17:42:34  ·  [JPM] Fetching...
+  17:42:34  ✓  [JPM] OK  $302.10  -1.36%  65 bars  vol 9.5M
+  17:42:34  ·  [GS] Fetching...
+  17:42:35  ✓  [GS] OK  $936.48  +1.15%  65 bars  vol 1.7M
+  17:42:35  ·  [BAC] Fetching...
+  17:42:35  ✓  [BAC] OK  $51.31  -2.73%  65 bars  vol 36.1M
+  17:42:35  ·  [XOM] Fetching...
+  17:42:36  ✓  [XOM] OK  $144.57  -1.37%  65 bars  vol 19.5M
+  17:42:36  ·  [CVX] Fetching...
+  17:42:36  ✓  [CVX] OK  $181.62  -0.48%  65 bars  vol 13.0M
+  17:42:36  ·  [MPC] Fetching...
+  17:42:37  ✓  [MPC] OK  $244.87  +1.08%  65 bars  vol 2.6M
+  17:42:37  ·  [COP] Fetching...
+  17:42:38  ✓  [COP] OK  $113.87  -0.88%  65 bars  vol 8.0M
+  17:42:38  ·  [CRWD] Fetching...
+  17:42:39  ✓  [CRWD] OK  $527.77  +4.36%  65 bars  vol 4.0M
+  17:42:39  ·  [SNOW] Fetching...
+  17:42:39  ✓  [SNOW] OK  $152.45  -0.83%  65 bars  vol 7.3M
+  17:42:39  ·  [MDB] Fetching...
+  17:42:40  ✓  [MDB] OK  $299.47  +2.06%  65 bars  vol 1.8M
+  17:42:40  ·  [NET] Fetching...
+  17:42:40  ✓  [NET] OK  $196.13  -23.62%  65 bars  vol 18.9M
+  17:42:40  ·  [DDOG] Fetching...
+  17:42:41  ✓  [DDOG] OK  $200.16  +6.06%  65 bars  vol 12.0M
+  17:42:41  ·  [ZS] Fetching...
+  17:42:41  ✓  [ZS] OK  $152.13  -0.43%  65 bars  vol 3.5M
+  17:42:41  ·  [HUBS] Fetching...
+  17:42:41  ✓  [HUBS] OK  $197.34  -19.03%  65 bars  vol 6.5M
+  17:42:41  ·  [D05.SI] Fetching...
+  17:42:42  ✓  [D05.SI] OK  $58.77  +1.56%  64 bars  vol 8.8M
+  17:42:42  ·  [U11.SI] Fetching...
+  17:42:42  ✓  [U11.SI] OK  $36.99  +1.18%  64 bars  vol 4.7M
+  17:42:42  ·  [O39.SI] Fetching...
+  17:42:43  ✓  [O39.SI] OK  $22.50  +2.65%  64 bars  vol 13.7M
+  17:42:43  ·  [Z74.SI] Fetching...
+  17:42:44  ✓  [Z74.SI] OK  $4.75  +1.28%  64 bars  vol 23.4M
+  17:42:44  ·  [C6L.SI] Fetching...
+  17:42:44  ✓  [C6L.SI] OK  $6.26  -0.79%  64 bars  vol 5.8M
+  17:42:44  ·  [S68.SI] Fetching...
+  17:42:44  ✓  [S68.SI] OK  $20.96  +0.24%  64 bars  vol 2.4M
+  17:42:44  ·  [BN4.SI] Fetching...
+  17:42:45  ✓  [BN4.SI] OK  $10.91  -0.27%  64 bars  vol 2.9M
+  17:42:45  ·  [U96.SI] Fetching...
+  17:42:46  ✓  [U96.SI] OK  $6.18  -2.68%  64 bars  vol 9.4M
+  17:42:46  ·  [G92.SI] Fetching...
+  17:42:46  ✓  [G92.SI] OK  $1.98  -3.43%  64 bars  vol 2.7M
+  17:42:46  ·  [1F2.SI] Fetching...
+  17:42:47  ✓  [1F2.SI] OK  $0.47  -2.06%  64 bars  vol 0.6M
+  17:42:47  ·  [S58.SI] Fetching...
+  17:42:47  ✓  [S58.SI] OK  $3.25  -2.69%  64 bars  vol 7.3M
+  17:42:47  ·  [V03.SI] Fetching...
+  17:42:48  ✓  [V03.SI] OK  $18.01  -1.21%  64 bars  vol 0.6M
+  17:42:48  ·  [F34.SI] Fetching...
+  17:42:48  ✓  [F34.SI] OK  $3.66  -1.61%  64 bars  vol 6.9M
+  17:42:48  ·  [T4B.SI] Fetching...
+  17:42:49  ✓  [T4B.SI] OK  $0.02  +0.00%  64 bars  vol 0.0M
+  17:42:49  ·  [C38U.SI] Fetching...
+  17:42:49  ✓  [C38U.SI] OK  $2.30  -0.86%  64 bars  vol 40.6M
+  17:42:49  ·  [ME8U.SI] Fetching...
+  17:42:50  ✓  [ME8U.SI] OK  $1.94  -0.51%  64 bars  vol 4.1M
+  17:42:50  ·  [A17U.SI] Fetching...
+  17:42:50  ✓  [A17U.SI] OK  $2.48  +0.00%  64 bars  vol 24.3M
+  17:42:50  ·  [J69U.SI] Fetching...
+  17:42:51  ✓  [J69U.SI] OK  $2.25  -0.44%  64 bars  vol 3.7M
+  17:42:51  ·  [K71U.SI] Fetching...
+  17:42:51  ✓  [K71U.SI] OK  $0.88  -1.13%  64 bars  vol 82.5M
+  17:42:51  ✓  [NVDA] Score 80/100 | MOMENTUM CONT. | ADX 34 | RSI 60 | RVOL 0.9x | MACD BULL
+  17:42:51  ⚠  [AMD] Score 55/100 | EXTENDED | ADX 70 | RSI 81 | RVOL 1.3x | MACD BULL
+  17:42:51  ⚠  [MSFT] Score 50/100 | TREND FOLLOWING | ADX 18 | RSI 48 | RVOL 0.9x | MACD BULL
+  17:42:51  ✓  [AAPL] Score 85/100 | MOMENTUM CONT. | ADX 39 | RSI 69 | RVOL 1.1x | MACD BULL
+  17:42:51  ✓  [AMZN] Score 80/100 | MOMENTUM CONT. | ADX 68 | RSI 80 | RVOL 0.7x | MACD BULL
+  17:42:51  ⚠  [META] Score 50/100 | NEUTRAL | ADX 60 | RSI 28 | RVOL 0.8x | MACD BEAR
+  17:42:51  ⚠  [GOOGL] Score 55/100 | EXTENDED | ADX 85 | RSI 89 | RVOL 0.8x | MACD BULL
+  17:42:51  ✓  [TSLA] Score 65/100 | MOMENTUM CONT. | ADX 27 | RSI 69 | RVOL 1.0x | MACD BULL
+  17:42:51  ⚠  [NFLX] Score 50/100 | NEUTRAL | ADX 40 | RSI 24 | RVOL 0.8x | MACD BEAR
+  17:42:51  ✗  [PLTR] Score 30/100 | NEUTRAL | ADX 16 | RSI 42 | RVOL 0.8x | MACD BEAR
+  17:42:51  ✓  [SMCI] Score 70/100 | MOMENTUM CONT. | ADX 37 | RSI 66 | RVOL 1.3x | MACD BULL
+  17:42:51  ✓  [FLEX] Score 75/100 | EXTENDED | ADX 87 | RSI 91 | RVOL 2.0x | MACD BULL
+  17:42:51  ✓  [JBL] Score 85/100 | MOMENTUM CONT. | ADX 40 | RSI 62 | RVOL 1.1x | MACD BULL
+  17:42:51  ✓  [DELL] Score 80/100 | EXTENDED | ADX 66 | RSI 78 | RVOL 2.0x | MACD BULL
+  17:42:51  ✓  [HPE] Score 65/100 | EXTENDED | ADX 45 | RSI 71 | RVOL 1.2x | MACD BULL
+  17:42:51  ✓  [ARM] Score 70/100 | MOMENTUM CONT. | ADX 40 | RSI 61 | RVOL 1.1x | MACD BULL
+  17:42:51  ✓  [AVGO] Score 65/100 | TREND FOLLOWING | ADX 18 | RSI 63 | RVOL 1.1x | MACD BULL
+  17:42:51  ✓  [MARA] Score 70/100 | MOMENTUM CONT. | ADX 38 | RSI 61 | RVOL 1.1x | MACD BULL
+  17:42:51  ✓  [RIOT] Score 65/100 | EXTENDED | ADX 43 | RSI 73 | RVOL 0.8x | MACD BULL
+  17:42:51  ✓  [CLSK] Score 70/100 | MOMENTUM CONT. | ADX 37 | RSI 64 | RVOL 0.8x | MACD BULL
+  17:42:51  ✓  [BITF] Score 65/100 | EXTENDED | ADX 55 | RSI 71 | RVOL 1.0x | MACD BULL
+  17:42:51  ✓  [HIVE] Score 65/100 | MOMENTUM CONT. | ADX 32 | RSI 60 | RVOL 0.6x | MACD BULL
+  17:42:51  ✓  [WULF] Score 65/100 | MOMENTUM CONT. | ADX 34 | RSI 60 | RVOL 1.1x | MACD BULL
+  17:42:51  ⚠  [JPM] Score 50/100 | BB SQUEEZE | ADX 19 | RSI 33 | RVOL 1.2x | MACD BULL
+  17:42:51  ✓  [GS] Score 70/100 | BB SQUEEZE | ADX 6 | RSI 48 | RVOL 0.9x | MACD BULL
+  17:42:51  ⚠  [BAC] Score 50/100 | BB SQUEEZE | ADX 19 | RSI 34 | RVOL 1.1x | MACD BULL
+  17:42:51  ✗  [XOM] Score 40/100 | BB SQUEEZE | ADX 16 | RSI 44 | RVOL 1.1x | MACD BEAR
+  17:42:51  ⚠  [CVX] Score 45/100 | BB SQUEEZE | ADX 20 | RSI 47 | RVOL 1.3x | MACD BEAR
+  17:42:51  ✓  [MPC] Score 80/100 | MOMENTUM CONT. | ADX 46 | RSI 71 | RVOL 1.2x | MACD BULL
+  17:42:51  ✗  [COP] Score 35/100 | NEUTRAL | ADX 14 | RSI 46 | RVOL 0.9x | MACD BEAR
+  17:42:51  ✓  [CRWD] Score 65/100 | EXTENDED | ADX 50 | RSI 77 | RVOL 1.3x | MACD BULL
+  17:42:51  ⚠  [SNOW] Score 50/100 | NEUTRAL | ADX 6 | RSI 52 | RVOL 0.9x | MACD BEAR
+  17:42:51  ⚠  [MDB] Score 50/100 | TREND FOLLOWING | ADX 16 | RSI 67 | RVOL 1.1x | MACD BULL
+  17:42:51  ✓  [NET] Score 65/100 | NEUTRAL | ADX 7 | RSI 47 | RVOL 4.2x | MACD BULL
+  17:42:51  ✓  [DDOG] Score 70/100 | EXTENDED | ADX 76 | RSI 88 | RVOL 1.9x | MACD BULL
+  17:42:51  ✓  [ZS] Score 65/100 | MOMENTUM CONT. | ADX 29 | RSI 65 | RVOL 1.3x | MACD BULL
+  17:42:51  ⚠  [HUBS] Score 50/100 | NEUTRAL | ADX 15 | RSI 38 | RVOL 4.2x | MACD BEAR
+  17:42:51  ✓  [D05.SI] Score 95/100 | MOMENTUM CONT. | ADX 50 | RSI 75 | RVOL 1.7x | MACD BULL
+  17:42:51  ✓  [U11.SI] Score 90/100 | BB SQUEEZE | ADX 12 | RSI 56 | RVOL 1.9x | MACD BULL
+  17:42:51  ✓  [O39.SI] Score 95/100 | MOMENTUM CONT. | ADX 33 | RSI 61 | RVOL 2.1x | MACD BULL
+  17:42:51  ⚠  [Z74.SI] Score 50/100 | BB SQUEEZE | ADX 15 | RSI 44 | RVOL 0.6x | MACD BEAR
+  17:42:51  ⚠  [C6L.SI] Score 60/100 | NEUTRAL | ADX 40 | RSI 17 | RVOL 0.9x | MACD BEAR
+  17:42:51  ✓  [S68.SI] Score 75/100 | NEUTRAL | ADX 43 | RSI 38 | RVOL 1.0x | MACD BULL
+  17:42:51  ⚠  [BN4.SI] Score 50/100 | NEUTRAL | ADX 41 | RSI 31 | RVOL 0.6x | MACD BEAR
+  17:42:51  ✓  [U96.SI] Score 65/100 | NEUTRAL | ADX 67 | RSI 13 | RVOL 2.0x | MACD BEAR
+  17:42:51  ✓  [G92.SI] Score 70/100 | BB SQUEEZE | ADX 4 | RSI 46 | RVOL 1.9x | MACD BULL
+  17:42:51  ✓  [1F2.SI] Score 70/100 | BB SQUEEZE | ADX 13 | RSI 55 | RVOL 1.3x | MACD BULL
+  17:42:51  ✓  [S58.SI] Score 65/100 | NEUTRAL | ADX 61 | RSI 20 | RVOL 1.6x | MACD BEAR
+  17:42:51  ✓  [V03.SI] Score 65/100 | EXTENDED | ADX 64 | RSI 74 | RVOL 0.6x | MACD BULL
+  17:42:51  ✓  [F34.SI] Score 70/100 | NEUTRAL | ADX 36 | RSI 40 | RVOL 0.7x | MACD BULL
+  17:42:51  ✗  [T4B.SI] Score 40/100 | BB SQUEEZE | ADX 0 | RSI 0 | RVOL 0.0x | MACD BEAR
+  17:42:51  ✗  [C38U.SI] Score 40/100 | BB SQUEEZE | ADX 11 | RSI 41 | RVOL 1.3x | MACD BEAR
+  17:42:51  ⚠  [ME8U.SI] Score 60/100 | NEUTRAL | ADX 54 | RSI 31 | RVOL 0.4x | MACD BEAR
+  17:42:51  ⚠  [A17U.SI] Score 60/100 | NEUTRAL | ADX 44 | RSI 20 | RVOL 1.1x | MACD BEAR
+  17:42:51  ⚠  [J69U.SI] Score 50/100 | BB SQUEEZE | ADX 0 | RSI 43 | RVOL 0.7x | MACD BULL
+  17:42:51  ✓  [K71U.SI] Score 80/100 | NEUTRAL | ADX 38 | RSI 26 | RVOL 4.7x | MACD BEAR
+  17:42:51  ✓  [MAGIC] Scanned 56 | Qualified (score≥55): 39 | Showing top 5
+  17:42:51  ✓  [MAGIC] #1   D05.SI  score 95/100  MOMENTUM CONT.
+  17:42:51  ✓  [MAGIC] #2   O39.SI  score 95/100  MOMENTUM CONT.
+  17:42:51  ✓  [MAGIC] #3   U11.SI  score 90/100  BB SQUEEZE
+  17:42:51  ✓  [MAGIC] #4     AAPL  score 85/100  MOMENTUM CONT.
+  17:42:51  ✓  [MAGIC] #5      JBL  score 85/100  MOMENTUM CONT.
+127.0.0.1 - - [11/May/2026 17:42:51] "GET /api/magic?market=both&top=5 HTTP/1.1" 200 -

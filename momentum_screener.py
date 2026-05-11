@@ -43,6 +43,12 @@ PRESETS = {
     "penny_vol":  ["MARA","RIOT","CLSK","CIFR","HUT","ARBK","BTBT","BITF","HIVE","WULF"],
     "penny_bio":  ["SNDX","IMVT","VERA","PRAX","JANX","DAWN","ITOS","NUVB","KYMR","VKTX"],
     "penny_tech": ["BBAI","AEYE","WRAP","GFAI","UXIN","BTCS","HOLO","MIMO","VERB","IDEX"],
+     # ── SINGAPORE (SGX) ──────────────────────────────────────────────────────
+    # Blue chips + mid-caps on SGX. Yahoo Finance uses .SI suffix.
+    # SGX hours: 9:00 AM – 5:00 PM SGT (UTC+8). Lunch break 12:00–1:00 PM.
+    "sgx_core":  ["U96.SI","D05.SI","G92.SI","1F2.SI","BN4.SI"],
+    "sgx_broad": ["U96.SI","D05.SI","G92.SI","1F2.SI","BN4.SI",
+                  "S68.SI","C6L.SI","Z74.SI","O39.SI","U11.SI"],
 }
 
 # ── COLOURS ───────────────────────────────────────────────────────────────────
@@ -60,6 +66,68 @@ def log(msg, level="info"):
     ts  = datetime.now().strftime("%H:%M:%S")
     tag = {"ok": green("✓"), "err": red("✗"), "warn": yellow("⚠"), "info": dim("·")}[level]
     print(f"  {dim(ts)}  {tag}  {msg}", flush=True)
+# ── MAGIC FIND ────────────────────────────────────────────────────────────────
+# Scans a broad universe of US + SGX stocks, scores all of them,
+# and returns only the top N by confidence score.
+# Run: python momentum_screener.py --magic
+# or:  GET /api/magic?market=us&top=5
+
+MAGIC_UNIVERSE = {
+    "us": [
+        # Large cap momentum leaders
+        "NVDA","AMD","MSFT","AAPL","AMZN","META","GOOGL","TSLA","NFLX",
+        # AI infrastructure
+        "PLTR","SMCI","FLEX","JBL","DELL","HPE","ARM","AVGO",
+        # High-beta / high-RVOL
+        "MARA","RIOT","CLSK","BITF","HIVE","WULF",
+        # Financials / macro
+        "JPM","GS","BAC","XOM","CVX","MPC","COP",
+        # Growth
+        "CRWD","SNOW","MDB","NET","DDOG","ZS","HUBS",
+    ],
+    "sg": [
+        # STI blue chips
+        "D05.SI","U11.SI","O39.SI","Z74.SI","C6L.SI","S68.SI","BN4.SI",
+        # Mid caps with momentum
+        "U96.SI","G92.SI","1F2.SI","S58.SI","V03.SI","F34.SI","T4B.SI",
+        # REITs
+        "C38U.SI","ME8U.SI","A17U.SI","J69U.SI","K71U.SI",
+    ],
+    "both": [],  # populated dynamically below
+}
+MAGIC_UNIVERSE["both"] = MAGIC_UNIVERSE["us"] + MAGIC_UNIVERSE["sg"]
+
+def magic_find(market="both", top=5, min_score=55):
+    """
+    Scan the full universe for a given market, score everything,
+    return only top N results above min_score.
+    """
+    universe = MAGIC_UNIVERSE.get(market, MAGIC_UNIVERSE["both"])
+    log(f"[MAGIC] Scanning {len(universe)} stocks in universe: {market.upper()}", "info")
+
+    raw_data, failed = [], []
+    for t in universe:
+        d = fetch(t)
+        if d:
+            raw_data.append(d)
+        else:
+            failed.append(t)
+
+    if not raw_data:
+        log("[MAGIC] No data fetched — check connection", "err")
+        return []
+
+    results = [analyze(d) for d in raw_data]
+    # Filter by min score and sort
+    qualified = [r for r in results if r["score"] >= min_score]
+    qualified.sort(key=lambda x: x["score"], reverse=True)
+    top_picks = qualified[:top]
+
+    log(f"[MAGIC] Scanned {len(results)} | Qualified (score≥{min_score}): {len(qualified)} | Showing top {len(top_picks)}", "ok")
+    for i, r in enumerate(top_picks, 1):
+        log(f"[MAGIC] #{i} {r['ticker']:>8}  score {r['score']}/100  {r['setup']}", "ok")
+
+    return top_picks
 
 # ── DATA FETCH ────────────────────────────────────────────────────────────────
 def fetch(ticker):
@@ -116,6 +184,8 @@ def adx(highs, lows, closes, period=14):
         tr = max(highs[i]-lows[i], abs(highs[i]-closes[i-1]), abs(lows[i]-closes[i-1]))
         dp = max(highs[i]-highs[i-1], 0); dm = max(lows[i-1]-lows[i], 0)
         st += tr; sp += dp if dp > dm else 0; sm += dm if dm > dp else 0
+    if st == 0: return 0.0        # ← guard for illiquid/flat stocks
+
     pip = (sp/st)*100; mim = (sm/st)*100
     return abs(pip-mim)/(pip+mim or 1)*100
 
@@ -429,7 +499,16 @@ def serve(port=5000):
             if d: results.append(analyze(d))
         results.sort(key=lambda x: x["score"], reverse=True)
         return jsonify(results)
-
+    @app.route("/api/magic")
+    @require_api_key
+    def api_magic():
+        market    = request.args.get("market", "both").strip()
+        top       = int(request.args.get("top", 5))
+        min_score = int(request.args.get("min_score", 55))
+        if market not in MAGIC_UNIVERSE:
+            abort(400, f"market must be one of: {list(MAGIC_UNIVERSE.keys())}")
+        results = magic_find(market=market, top=top, min_score=min_score)
+        return jsonify(results)
     # ── startup banner ────────────────────────────────────────────────────────
     print(f"\n{'═'*64}")
     print(f"  {bold('MOMENTUM SCREENER — API SERVER')}")
@@ -441,6 +520,9 @@ def serve(port=5000):
     print(f"  {cyan('GET')}  http://localhost:{port}/api/quote?ticker=FLEX         (auth)")
     print(f"  {cyan('GET')}  http://localhost:{port}/api/regime                    (auth)")
     print(f"  {cyan('GET')}  http://localhost:{port}/api/scan?preset=watchlist     (auth)")
+    print(f"  {cyan('GET')}  http://0.0.0.0:{port}/api/magic?market=both&top=5   (auth)")
+    print(f"  {cyan('GET')}  http://0.0.0.0:{port}/api/magic?market=us&top=5     (auth)")
+    print(f"  {cyan('GET')}  http://0.0.0.0:{port}/api/magic?market=sg&top=5     (auth)")
     print(f"\n  {dim('Press Ctrl+C to stop.')}\n")
 
     app.run(host="0.0.0.0", port=port, debug=False)
@@ -453,10 +535,25 @@ def main():
     parser.add_argument("--watch",  action="store_true")
     parser.add_argument("--serve",  action="store_true")
     parser.add_argument("--port",   type=int, default=int(os.environ.get("PORT", 5000)))
+    parser.add_argument("--magic",  action="store_true",
+                        help="Scan full US+SGX universe and show top momentum setups")
+    parser.add_argument("--market", choices=["us","sg","both"], default="both",
+                        help="Universe for --magic scan (default: both)")
+    parser.add_argument("--top",    type=int, default=5,
+                        help="Number of top results for --magic (default: 5)")
+    args = parser.parse_args()
     args = parser.parse_args()
 
     if args.serve:
         serve(port=args.port)
+        return
+
+    if args.magic:
+        results = magic_find(market=args.market, top=args.top)
+        if results:
+            print_summary_table(results)
+            for i, a in enumerate(results, 1):
+                print_card(a, i)
         return
 
     tickers = [t.upper() for t in args.tickers] if args.tickers else PRESETS[args.preset]
