@@ -2,5 +2,4 @@ yfinance
 pandas
 tabulate
 colorama
-flask
-flask-cors
+uvicorn

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Serve momentum_screener.html with environment variables injected
+Serve index.html with environment variables injected
 """
 import os
 import http.server
@@ -17,9 +17,9 @@ USE_PYTHON_API = os.getenv('USE_PYTHON_API', 'true').lower() == 'true'
 
 class ConfiguredHTTPHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
-        if self.path in ['/', '/momentum_screener.html']:
+        if self.path in ['/', '/index.html']:
             # Read HTML file
-            html_path = Path(__file__).parent / 'momentum_screener.html'
+            html_path = Path(__file__).parent / 'index.html'
             with open(html_path, 'r') as f:
                 html_content = f.read()
             

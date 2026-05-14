@@ -34,7 +34,7 @@ docker push "$IMAGE_NAME:latest"
 
 echo "Pushing version tag..."
 
-docker push "$IMAGE_NAME:$NEW_VERSION"
+#docker push "$IMAGE_NAME:$NEW_VERSION"
 
 echo "Successfully pushed:"
 echo "$IMAGE_NAME:latest"

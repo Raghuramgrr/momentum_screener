@@ -8,9 +8,11 @@ Usage:
   python momentum_screener.py --preset ai            # preset watchlist
   python momentum_screener.py --watch                # auto-refresh every 5 min
   python momentum_screener.py --serve                # API server on :5000
+  python momentum_screener.py --magic                # scan full universe
 
 Install:
   pip install -r requirements.txt
+  pip install google-genai requests   # for AI analysis
 """
 
 import sys
@@ -33,22 +35,36 @@ except ImportError as e:
     print("  pip install -r requirements.txt\n")
     sys.exit(1)
 
+# ── optional AI modules (research + analyst) ──────────────────────────────────
+_here = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, _here)
+
+try:
+    import research_google as rg
+    _HAS_RESEARCH = True
+except ImportError:
+    _HAS_RESEARCH = False
+
+try:
+    import trading_analyst as ta
+    _HAS_ANALYST = True
+except ImportError:
+    _HAS_ANALYST = False
+
 # ── PRESETS ───────────────────────────────────────────────────────────────────
 PRESETS = {
-    "watchlist": ["FLEX", "AMD", "JBL", "COCO", "MPC"],
-    "ai":        ["NVDA", "AMD", "FLEX", "JBL", "PLTR", "SMCI"],
-    "momentum":  ["AAPL", "MSFT", "AMZN", "META", "TSLA", "NFLX"],
-    "energy":    ["MPC", "XOM", "CVX", "COP", "SLB"],
-    "mag7":      ["AAPL", "MSFT", "GOOGL", "AMZN", "META", "TSLA", "NVDA"],
+    "watchlist":  ["FLEX", "AMD", "JBL", "COCO", "MPC"],
+    "ai":         ["NVDA", "AMD", "FLEX", "JBL", "PLTR", "SMCI"],
+    "momentum":   ["AAPL", "MSFT", "AMZN", "META", "TSLA", "NFLX"],
+    "energy":     ["MPC", "XOM", "CVX", "COP", "SLB"],
+    "mag7":       ["AAPL", "MSFT", "GOOGL", "AMZN", "META", "TSLA", "NVDA"],
     "penny_vol":  ["MARA","RIOT","CLSK","CIFR","HUT","ARBK","BTBT","BITF","HIVE","WULF"],
     "penny_bio":  ["SNDX","IMVT","VERA","PRAX","JANX","DAWN","ITOS","NUVB","KYMR","VKTX"],
     "penny_tech": ["BBAI","AEYE","WRAP","GFAI","UXIN","BTCS","HOLO","MIMO","VERB","IDEX"],
-     # ── SINGAPORE (SGX) ──────────────────────────────────────────────────────
-    # Blue chips + mid-caps on SGX. Yahoo Finance uses .SI suffix.
-    # SGX hours: 9:00 AM – 5:00 PM SGT (UTC+8). Lunch break 12:00–1:00 PM.
-    "sgx_core":  ["U96.SI","D05.SI","G92.SI","1F2.SI","BN4.SI"],
-    "sgx_broad": ["U96.SI","D05.SI","G92.SI","1F2.SI","BN4.SI",
-                  "S68.SI","C6L.SI","Z74.SI","O39.SI","U11.SI"],
+    # ── SINGAPORE (SGX) ──────────────────────────────────────────────────────
+    "sgx_core":   ["U96.SI","D05.SI","G92.SI","1F2.SI","BN4.SI"],
+    "sgx_broad":  ["U96.SI","D05.SI","G92.SI","1F2.SI","BN4.SI",
+                   "S68.SI","C6L.SI","Z74.SI","O39.SI","U11.SI"],
 }
 
 # ── COLOURS ───────────────────────────────────────────────────────────────────
@@ -66,59 +82,40 @@ def log(msg, level="info"):
     ts  = datetime.now().strftime("%H:%M:%S")
     tag = {"ok": green("✓"), "err": red("✗"), "warn": yellow("⚠"), "info": dim("·")}[level]
     print(f"  {dim(ts)}  {tag}  {msg}", flush=True)
-# ── MAGIC FIND ────────────────────────────────────────────────────────────────
-# Scans a broad universe of US + SGX stocks, scores all of them,
-# and returns only the top N by confidence score.
-# Run: python momentum_screener.py --magic
-# or:  GET /api/magic?market=us&top=5
 
+# ── MAGIC FIND ────────────────────────────────────────────────────────────────
 MAGIC_UNIVERSE = {
     "us": [
-        # Large cap momentum leaders
         "NVDA","AMD","MSFT","AAPL","AMZN","META","GOOGL","TSLA","NFLX",
-        # AI infrastructure
         "PLTR","SMCI","FLEX","JBL","DELL","HPE","ARM","AVGO",
-        # High-beta / high-RVOL
         "MARA","RIOT","CLSK","BITF","HIVE","WULF",
-        # Financials / macro
         "JPM","GS","BAC","XOM","CVX","MPC","COP",
-        # Growth
         "CRWD","SNOW","MDB","NET","DDOG","ZS","HUBS",
     ],
     "sg": [
-        # STI blue chips
         "D05.SI","U11.SI","O39.SI","Z74.SI","C6L.SI","S68.SI","BN4.SI",
-        # Mid caps with momentum
         "U96.SI","G92.SI","1F2.SI","S58.SI","V03.SI","F34.SI","T4B.SI",
-        # REITs
         "C38U.SI","ME8U.SI","A17U.SI","J69U.SI","K71U.SI",
     ],
-    "both": [],  # populated dynamically below
+    "both": [],
 }
 MAGIC_UNIVERSE["both"] = MAGIC_UNIVERSE["us"] + MAGIC_UNIVERSE["sg"]
 
 def magic_find(market="both", top=5, min_score=55):
-    """
-    Scan the full universe for a given market, score everything,
-    return only top N results above min_score.
-    """
     universe = MAGIC_UNIVERSE.get(market, MAGIC_UNIVERSE["both"])
     log(f"[MAGIC] Scanning {len(universe)} stocks in universe: {market.upper()}", "info")
 
     raw_data, failed = [], []
     for t in universe:
         d = fetch(t)
-        if d:
-            raw_data.append(d)
-        else:
-            failed.append(t)
+        if d: raw_data.append(d)
+        else: failed.append(t)
 
     if not raw_data:
         log("[MAGIC] No data fetched — check connection", "err")
         return []
 
-    results = [analyze(d) for d in raw_data]
-    # Filter by min score and sort
+    results   = [analyze(d) for d in raw_data]
     qualified = [r for r in results if r["score"] >= min_score]
     qualified.sort(key=lambda x: x["score"], reverse=True)
     top_picks = qualified[:top]
@@ -184,8 +181,7 @@ def adx(highs, lows, closes, period=14):
         tr = max(highs[i]-lows[i], abs(highs[i]-closes[i-1]), abs(lows[i]-closes[i-1]))
         dp = max(highs[i]-highs[i-1], 0); dm = max(lows[i-1]-lows[i], 0)
         st += tr; sp += dp if dp > dm else 0; sm += dm if dm > dp else 0
-    if st == 0: return 0.0        # ← guard for illiquid/flat stocks
-
+    if st == 0: return 0.0
     pip = (sp/st)*100; mim = (sm/st)*100
     return abs(pip-mim)/(pip+mim or 1)*100
 
@@ -275,8 +271,8 @@ def analyze(data):
 
     return dict(
         ticker=data["ticker"], name=data["name"],
-        price=price, changePct=chg_pct,           # ← camelCase for JS frontend
-        change_pct=chg_pct,                        # ← keep snake_case alias too
+        price=price, changePct=chg_pct,
+        change_pct=chg_pct,
         setup=setup, score=score,
         rsi=rsi_v, adx=adx_v, rvol=rvol_v,
         macd=macd_v, macd_bull=macd_bull,
@@ -287,13 +283,11 @@ def analyze(data):
 
 # ── REGIME ────────────────────────────────────────────────────────────────────
 def regime_data():
-    """Returns SPY/QQQ/VIX data with camelCase keys for the JS frontend."""
     results = {}
     for sym in ["SPY", "QQQ", "^VIX"]:
         d = fetch(sym)
         if d: results[sym] = d
     if len(results) < 3: return None
-    # FIX: use camelCase changePct so JS frontend (d.spy.changePct) works correctly
     return {
         "spy": {"price": results["SPY"]["price"],  "changePct": results["SPY"]["change_pct"]},
         "qqq": {"price": results["QQQ"]["price"],  "changePct": results["QQQ"]["change_pct"]},
@@ -301,12 +295,11 @@ def regime_data():
     }
 
 def market_regime():
-    """CLI-only: pretty-print current market regime."""
     log("Fetching market regime (SPY, QQQ, VIX)...", "info")
     rd = regime_data()
     if not rd: return "UNKNOWN"
-    vix = rd["vix"]["price"]
-    spy_chg = rd["spy"]["changePct"]   # FIX: was rd["spy"]["change_pct"] — KeyError
+    vix     = rd["vix"]["price"]
+    spy_chg = rd["spy"]["changePct"]
     qqq_chg = rd["qqq"]["changePct"]
     if spy_chg > 0 and qqq_chg > 0 and vix < 20:
         return green("RISK ON") + f"  — Long setups preferred. VIX {vix:.1f}"
@@ -338,7 +331,7 @@ def print_card(a, rank):
     sqz    = yellow("SQUEEZE") if a["squeeze"] else dim("no squeeze")
     print(f"  ADX {adx_c}  RSI {rsi_c}  RVOL {rvol_c}  "
           f"MACD {macd_c}  vs20EMA {pct_c}  ATR ${a['atr']:.2f}  {sqz}")
-    entry_s=dim(f"${a['price']:.2f}"); stop_s=red(f"${a['stop']}"); 
+    entry_s=dim(f"${a['price']:.2f}"); stop_s=red(f"${a['stop']}");
     t1_s=green(f"${a['t1']}"); t2_s=green(f"${a['t2']}"); rr_s=cyan(f"1:{a['rr']}")
     print(f"\n  {'ENTRY':>10}  {'STOP':>10}  {'TARGET 1':>10}  {'TARGET 2':>10}  {'R:R':>6}")
     print(f"  {entry_s:>10}  {stop_s:>10}  {t1_s:>10}  {t2_s:>10}  {rr_s:>6}")
@@ -398,7 +391,7 @@ def run(tickers, watch=False):
 # ── FLASK API SERVER ──────────────────────────────────────────────────────────
 def serve(port=5000):
     try:
-        from flask import Flask, jsonify, request
+        from flask import Flask, jsonify, request, abort
         from flask_cors import CORS
     except ImportError:
         print(red("\n  Run:  pip install flask flask-cors\n"))
@@ -417,7 +410,6 @@ def serve(port=5000):
     app = Flask(__name__)
     CORS(app, origins=origins)
 
-    # FIX: moved hmac import to module top level; decorator is clean now
     def require_api_key(f):
         @functools.wraps(f)
         def decorated(*args, **kwargs):
@@ -432,7 +424,7 @@ def serve(port=5000):
             return f(*args, **kwargs)
         return decorated
 
-    # ── routes ────────────────────────────────────────────────────────────────
+    # ── core routes ───────────────────────────────────────────────────────────
     @app.route("/")
     def index():
         # Serve index.html with api-key and api-base injected as <meta> tags.
@@ -456,14 +448,27 @@ def serve(port=5000):
         )
         html = html.replace("<head>", f"<head>\n{meta_tags}", 1)
         return Response(html, mimetype="text/html")
-
+    
     @app.route("/health")
     def health():
         from datetime import timezone
-        return jsonify({"status": "ok", "timestamp": datetime.now(timezone.utc).isoformat()})
+        ai_status = {}
+        if _HAS_RESEARCH:
+            ai_status["gemini_model"]    = rg.get_active_model()
+            ai_status["model_chain"]     = rg.MODEL_CHAIN
+            ai_status["gemini_key_set"]  = bool(rg.GEMINI_API_KEY)
+            ai_status["serpapi_key_set"] = bool(rg.SERPAPI_KEY)
+        return jsonify({
+            "status":    "ok",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "ai":        ai_status,
+            "modules": {
+                "research_google": _HAS_RESEARCH,
+                "trading_analyst": _HAS_ANALYST,
+            },
+        })
 
     @app.route("/api/quote")
-    @require_api_key
     def api_quote():
         ticker = request.args.get("ticker", "").upper().strip()
         if not ticker:
@@ -475,7 +480,7 @@ def serve(port=5000):
         return jsonify(result)
 
     @app.route("/api/regime")
-    @require_api_key
+    #@require_api_key
     def api_regime():
         rd = regime_data()
         if not rd:
@@ -483,7 +488,7 @@ def serve(port=5000):
         return jsonify(rd)
 
     @app.route("/api/scan")
-    @require_api_key
+    #@require_api_key
     def api_scan():
         preset = request.args.get("preset", "").strip()
         raw    = request.args.get("tickers", "").strip()
@@ -499,8 +504,9 @@ def serve(port=5000):
             if d: results.append(analyze(d))
         results.sort(key=lambda x: x["score"], reverse=True)
         return jsonify(results)
+
     @app.route("/api/magic")
-    @require_api_key
+    #@require_api_key
     def api_magic():
         market    = request.args.get("market", "both").strip()
         top       = int(request.args.get("top", 5))
@@ -509,20 +515,51 @@ def serve(port=5000):
             abort(400, f"market must be one of: {list(MAGIC_UNIVERSE.keys())}")
         results = magic_find(market=market, top=top, min_score=min_score)
         return jsonify(results)
+
+    # ── AI research routes (from research_google.py) ──────────────────────────
+    if _HAS_RESEARCH:
+        rg.register_research_routes(app, require_api_key)
+        log("AI research routes registered (/api/research, /api/research/quota, /api/models)", "ok")
+    else:
+        log("research_google.py not found — /api/research disabled", "warn")
+
+    # ── AI analyst routes (from trading_analyst.py) ───────────────────────────
+    if _HAS_ANALYST:
+        ta.register_analyst_routes(app, require_api_key)
+        log("AI analyst routes registered (/api/analyst, /api/analyst/models)", "ok")
+    else:
+        log("trading_analyst.py not found — /api/analyst disabled", "warn")
+
     # ── startup banner ────────────────────────────────────────────────────────
+    ai_model = rg.get_active_model() if _HAS_RESEARCH else "not available"
+    ai_chain = " → ".join(rg.MODEL_CHAIN) if _HAS_RESEARCH else "—"
+
     print(f"\n{'═'*64}")
     print(f"  {bold('MOMENTUM SCREENER — API SERVER')}")
     print(f"{'═'*64}")
     print(f"\n  {green('Auth:')}    {'API key required (Bearer token)' if API_KEY else red('UNPROTECTED — set API_KEY env var')}")
     print(f"  {green('Origins:')} {origins}")
+    print(f"\n  {green('AI Status:')}")
+    print(f"  research_google : {'✓ loaded' if _HAS_RESEARCH else red('✗ not found')}")
+    print(f"  trading_analyst : {'✓ loaded' if _HAS_ANALYST  else red('✗ not found')}")
+    print(f"  Active model    : {ai_model}")
+    print(f"  Model chain     : {ai_chain}")
     print(f"\n  {green('Routes:')}")
-    print(f"  {cyan('GET')}  http://localhost:{port}/health                        (public)")
-    print(f"  {cyan('GET')}  http://localhost:{port}/api/quote?ticker=FLEX         (auth)")
-    print(f"  {cyan('GET')}  http://localhost:{port}/api/regime                    (auth)")
-    print(f"  {cyan('GET')}  http://localhost:{port}/api/scan?preset=watchlist     (auth)")
-    print(f"  {cyan('GET')}  http://0.0.0.0:{port}/api/magic?market=both&top=5   (auth)")
-    print(f"  {cyan('GET')}  http://0.0.0.0:{port}/api/magic?market=us&top=5     (auth)")
-    print(f"  {cyan('GET')}  http://0.0.0.0:{port}/api/magic?market=sg&top=5     (auth)")
+    print(f"  GET  /health")
+    print(f"  GET  /api/quote?ticker=FLEX")
+    print(f"  GET  /api/regime")
+    print(f"  GET  /api/scan?preset=watchlist")
+    print(f"  GET  /api/scan?tickers=FLEX,AMD,NVDA")
+    print(f"  GET  /api/magic?market=both&top=5")
+    if _HAS_RESEARCH:
+        print(f"  GET  /api/research?ticker=FLEX&days=7")
+        print(f"  GET  /api/research/quota")
+        print(f"  GET  /api/models              (get active model)")
+        print(f"  POST /api/models              (set model: {{model: 'gemini-3.1-flash-lite'}})")
+    if _HAS_ANALYST:
+        print(f"  GET  /api/analyst?ticker=AAPL&risk=aggressive&period=short-term")
+        print(f"  GET  /api/analyst/models")
+        print(f"  POST /api/analyst/models      (set model)")
     print(f"\n  {dim('Press Ctrl+C to stop.')}\n")
 
     app.run(host="0.0.0.0", port=port, debug=False)
@@ -541,7 +578,6 @@ def main():
                         help="Universe for --magic scan (default: both)")
     parser.add_argument("--top",    type=int, default=5,
                         help="Number of top results for --magic (default: 5)")
-    args = parser.parse_args()
     args = parser.parse_args()
 
     if args.serve:

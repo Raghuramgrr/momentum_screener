@@ -26,6 +26,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # ── app files ─────────────────────────────────────────────────────────────────
 COPY momentum_screener.py ./
 COPY index.html           ./
+COPY research_google.py   ./
+COPY trading_analyst.py   ./
 
 # ── runtime config ────────────────────────────────────────────────────────────
 # PORT: Render injects this automatically; default to 5000 for local Docker.

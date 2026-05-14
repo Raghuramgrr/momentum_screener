@@ -123,6 +123,25 @@ const PYTHON_API_BASE = 'http://localhost:8080/api';
 - **No overnight holds** — exit same day
 - Stop loss is **mandatory** — use ATR-based stop shown on card
 
+
+# See all universes
+python trading_analyst.py --list
+
+# Pick best momentum stock for aggressive short-term trader
+python trading_analyst.py --find momentum --risk aggressive --period short-term
+
+# Best MAG7 stock for moderate medium-term
+python trading_analyst.py --find mag7 --risk moderate --period medium-term
+
+# Best penny stock (high risk plays)
+python trading_analyst.py --find penny --risk aggressive --period short-term
+
+# Best SGX stock for Singapore
+python trading_analyst.py --find sgx --risk conservative --period long-term
+
+# Let it pick from everything
+python trading_analyst.py --find any --risk aggressive --period short-term
+
 ---
 
 ## CONFIDENCE SCORE
@@ -142,6 +161,8 @@ momentum_screener.py      ← Python CLI + API server
 momentum-screener.html    ← Browser frontend
 README.md                 ← This file
 ```
+
+
 
 ---
 

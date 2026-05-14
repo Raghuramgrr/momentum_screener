@@ -18,7 +18,7 @@
 set -euo pipefail
 
 # ── defaults ──────────────────────────────────────────────────────────────────
-PORT=5000
+PORT=5500
 OPEN_BROWSER=true
 GEN_API_KEY=false
 STOP_ONLY=false
@@ -95,7 +95,7 @@ cd "$SCRIPT_DIR"
 
 # ── check required files ──────────────────────────────────────────────────────
 head "Checking files..."
-for f in momentum_screener.py index.html; do
+for f in momentum_screener.py research_google.py index.html; do
   if [[ -f "$f" ]]; then
     ok "$f"
   else
@@ -125,8 +125,7 @@ fi
 head "Checking dependencies..."
 
 # Build requirements list (with flask/cors added automatically)
-REQUIRED_PKGS=("yfinance" "pandas" "tabulate" "colorama" "flask" "flask_cors")
-
+REQUIRED_PKGS=("yfinance" "pandas" "tabulate" "colorama" "fastapi" "uvicorn")
 MISSING=()
 for pkg in "${REQUIRED_PKGS[@]}"; do
   if ! $PYTHON -c "import $pkg" 2>/dev/null; then
@@ -173,16 +172,12 @@ if command -v lsof &>/dev/null; then
   fi
 fi
 
-# ── API key setup ─────────────────────────────────────────────────────────────
-# On Render/cloud: set API_KEY in the dashboard Environment tab — it persists.
-# On local dev: auto-generate a fresh key each session (never written to disk).
-head "API key..."
-if [[ -n "${API_KEY:-}" ]]; then
-  ok "Using existing API_KEY from environment (Render / shell export)"
-else
+if [[ "${ENABLE_AUTH:-false}" == "true" ]]; then
   SESSION_KEY=$($PYTHON -c "import secrets; print(secrets.token_urlsafe(32))")
   export API_KEY="$SESSION_KEY"
-  ok "Session key generated (local dev — not stored to disk)"
+  ok "Session key generated"
+else
+  warn "Auth disabled for local dev"
 fi
 
 # ── start Flask backend ───────────────────────────────────────────────────────
@@ -250,7 +245,7 @@ echo ""
 echo -e "  ${G}════════════════════════════════════════${RS}"
 echo -e "  ${G}Screener is live!${RS}"
 echo ""
-echo -e "  ${C}Frontend:${RS} http://localhost:$PORT  (Flask-served, key injected)"
+echo -e "  ${C}Frontend:${RS} http://localhost:$PORT  (fastapi-served, key injected)"
 echo -e "  ${C}API:     ${RS} http://localhost:$PORT/api/scan?preset=watchlist"
 echo -e "  ${C}Health:  ${RS} http://localhost:$PORT/health"
 echo -e "  ${C}Log:     ${RS} $LOG_FILE"

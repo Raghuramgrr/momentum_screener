@@ -90,6 +90,50 @@
   .empty{text-align:center;padding:50px 20px;color:var(--muted);font-family:'Space Mono',monospace;font-size:12px;letter-spacing:1px;}
   .api-banner{display:none;background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.25);border-radius:8px;padding:10px 14px;margin-bottom:1rem;font-family:'Space Mono',monospace;font-size:10px;color:var(--cyan);letter-spacing:0.5px;line-height:1.7;}
   .api-banner.show{display:block;}
+  .research-btn{margin-top:10px;width:100%;padding:7px 0;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;background:transparent;border:1px solid rgba(180,100,255,0.3);color:#c084fc;border-radius:6px;cursor:pointer;transition:all 0.2s;}
+  .research-btn:hover{background:rgba(180,100,255,0.08);border-color:#c084fc;}
+  .research-btn:disabled{opacity:0.4;cursor:not-allowed;}
+  .research-panel{display:none;margin-top:10px;padding:12px 14px;background:rgba(180,100,255,0.04);border:1px solid rgba(180,100,255,0.2);border-radius:8px;font-size:11px;line-height:1.7;color:#c8b4f0;}
+  .research-panel.show{display:block;}
+  .research-panel strong{color:var(--text);}
+  .rp-section{margin-top:8px;padding-top:8px;border-top:1px solid rgba(180,100,255,0.15);}
+  .rp-label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;color:#c084fc;margin-bottom:4px;}
+  .rp-sentiment{display:inline-block;font-family:'Space Mono',monospace;font-size:9px;padding:2px 8px;border-radius:3px;margin-left:6px;font-weight:700;}
+  .rp-bull{background:rgba(0,230,118,0.12);color:var(--green);border:1px solid rgba(0,230,118,0.3);}
+  .rp-bear{background:rgba(255,61,87,0.12);color:var(--red);border:1px solid rgba(255,61,87,0.3);}
+  .rp-neutral{background:rgba(255,214,0,0.10);color:var(--yellow);border:1px solid rgba(255,214,0,0.3);}
+  .rp-mixed{background:rgba(74,96,112,0.2);color:var(--muted);border:1px solid var(--border);}
+  .rp-risk{color:var(--red);}
+  .rp-opp{color:var(--green);}
+  .rp-cached{font-family:'Space Mono',monospace;font-size:8px;color:var(--muted);float:right;}
+  /* ── MODEL SWITCHER ── */
+  .model-bar{display:flex;align-items:center;gap:8px;margin-bottom:1.2rem;flex-wrap:wrap;}
+  .model-label{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;white-space:nowrap;}
+  .model-btn{font-family:'Space Mono',monospace;font-size:9px;padding:4px 10px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all 0.15s;letter-spacing:0.5px;}
+  .model-btn:hover{border-color:var(--cyan);color:var(--cyan);}
+  .model-btn.active{border-color:var(--cyan);color:#000;background:var(--cyan);}
+  .model-btn.exhausted{border-color:rgba(255,61,87,0.4);color:var(--red);text-decoration:line-through;}
+  /* ── AI ANALYST PANEL ── */
+  .analyst-btn{margin-top:10px;width:100%;padding:8px 0;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;background:transparent;border:1px solid rgba(0,229,255,0.3);color:var(--cyan);border-radius:6px;cursor:pointer;transition:all 0.2s;}
+  .analyst-btn:hover{background:rgba(0,229,255,0.07);border-color:var(--cyan);}
+  .analyst-btn:disabled{opacity:0.4;cursor:not-allowed;}
+  .analyst-panel{display:none;margin-top:10px;padding:14px;background:rgba(0,229,255,0.03);border:1px solid rgba(0,229,255,0.2);border-radius:8px;}
+  .analyst-panel.show{display:block;}
+  .analyst-selectors{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+  .sel-group{display:flex;flex-direction:column;gap:4px;}
+  .sel-label{font-family:'Space Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;}
+  .sel-btns{display:flex;gap:4px;}
+  .sel-btn{font-family:'Space Mono',monospace;font-size:9px;padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s;}
+  .sel-btn:hover{border-color:var(--cyan);color:var(--cyan);}
+  .sel-btn.active{background:var(--cyan);border-color:var(--cyan);color:#000;font-weight:700;}
+  .analyst-run{width:100%;padding:7px;font-family:'Space Mono',monospace;font-size:10px;background:var(--cyan);color:#000;border:none;border-radius:5px;cursor:pointer;font-weight:700;letter-spacing:1px;margin-top:6px;}
+  .analyst-run:hover{background:#00ffff;}
+  .analyst-run:disabled{opacity:0.4;cursor:not-allowed;}
+  .analyst-result{margin-top:10px;font-size:11px;line-height:1.7;color:#9ab;}
+  .analyst-result .ar-decision{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;}
+  .analyst-result .ar-section{margin-top:8px;padding-top:8px;border-top:1px solid rgba(0,229,255,0.12);}
+  .analyst-result .ar-lbl{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:1px;color:var(--cyan);margin-bottom:3px;}
+  .analyst-result .ar-model{font-family:'Space Mono',monospace;font-size:8px;color:var(--muted);margin-top:6px;}
   .disc{margin-top:2rem;font-size:10px;color:var(--muted);font-family:'Space Mono',monospace;line-height:1.7;padding:12px 16px;border-radius:6px;border:1px solid rgba(255,214,0,0.15);background:rgba(255,214,0,0.03);}
   @media(max-width:600px){
     .metrics{grid-template-columns:repeat(3,1fr);}
@@ -104,7 +148,10 @@
 
   <div class="title">MOMENTUM / SCAN</div>
   <div class="sub">MULTI-FACTOR SWING &amp; INTRADAY SIGNAL ENGINE · LIVE DATA</div>
-
+  <div class="model-bar" id="modelBar">
+    <span class="model-label">GEMINI MODEL ▸</span>
+    <!-- buttons injected by JS -->
+  </div>
   <div class="api-banner" id="apiBanner">
     ⚡ PYTHON BACKEND ACTIVE — fetching via momentum_screener.py. No CORS issues.
   </div>
@@ -196,7 +243,6 @@ const PYTHON_API_BASE = _meta ? _meta.content
   : (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:5000/api'
     : window.location.origin + '/api';
-const API_KEY = _apiKey ? _apiKey.content : '';
 
 async function apiFetch(url) {
   const headers = { 'Accept': 'application/json' };
@@ -518,6 +564,39 @@ function renderCard(a){
     <div class="conf-bar"><div class="conf-fill" style="width:${a.score}%;background:${cc(a.score)}"></div></div>
     <div class="conf-s" style="color:${cc(a.score)}">${a.score}/100</div>
   </div>
+  <button class="research-btn" id="rbtn-${a.ticker}" onclick="toggleResearch('${a.ticker}')">
+  <button class="analyst-btn" id="abtn-${a.ticker}" onclick="toggleAnalyst('${a.ticker}')">
+    ⚡ AI ANALYSIS — STRATEGY · ENTRY · EXIT · RISK
+  </button>
+  <div class="analyst-panel" id="apanel-${a.ticker}">
+    <div class="analyst-selectors">
+      <div class="sel-group">
+        <div class="sel-label">RISK PROFILE</div>
+        <div class="sel-btns" id="arisk-${a.ticker}">
+          <button class="sel-btn" onclick="selRisk('${a.ticker}','conservative',this)">Conservative</button>
+          <button class="sel-btn active" onclick="selRisk('${a.ticker}','moderate',this)">Moderate</button>
+          <button class="sel-btn" onclick="selRisk('${a.ticker}','aggressive',this)">Aggressive</button>
+        </div>
+      </div>
+      <div class="sel-group">
+        <div class="sel-label">TIMEFRAME</div>
+        <div class="sel-btns" id="aperiod-${a.ticker}">
+          <button class="sel-btn active" onclick="selPeriod('${a.ticker}','short-term',this)">Short</button>
+          <button class="sel-btn" onclick="selPeriod('${a.ticker}','medium-term',this)">Medium</button>
+          <button class="sel-btn" onclick="selPeriod('${a.ticker}','long-term',this)">Long</button>
+        </div>
+      </div>
+    </div>
+    <button class="analyst-run" id="arun-${a.ticker}" onclick="runAnalyst('${a.ticker}')">
+      ▶ RUN AI ANALYSIS
+    </button>
+    <div class="analyst-result" id="ares-${a.ticker}"></div>
+  </div>
+    \u2726 AI SIGNAL &mdash; NEWS &middot; CATALYST &middot; RISK &middot; DECISION
+  </button>
+  <div class="research-panel" id="rpanel-${a.ticker}">
+    <div style="color:var(--muted);font-family:Space Mono,monospace;font-size:10px">Click button above to load AI research...</div>
+  </div>
 </div>`;
 }
 
@@ -662,12 +741,312 @@ async function runMagicFind(market='both'){
   log(`[MAGIC] Done — ${results.length} scanned, ${top.length} qualified, ${errors.length} failed`,'ok');
   btn.textContent='▶ SCAN';btn.disabled=false;
 }
+// ── MODEL SWITCHER ───────────────────────────────────────────────
+const MODEL_LIST = [
+  {id:'gemini-2.5-flash',      label:'2.5 Flash',      rpd:20},
+  {id:'gemini-3-flash',        label:'3 Flash',         rpd:20},
+  {id:'gemini-2.5-flash-lite', label:'2.5 Flash Lite',  rpd:20},
+  {id:'gemini-3.1-flash-lite', label:'3.1 Flash Lite',  rpd:500},
+  {id:'gemini-2.0-flash-lite', label:'2.0 Flash Lite',  rpd:200},
+];
+let _activeModel = MODEL_LIST[0].id;
+let _exhaustedModels = new Set();
 
+async function loadModels() {
+  if (!USE_PYTHON_API) return;
+  try {
+    const d = await apiFetch(`${PYTHON_API_BASE}/analyst/models`);
+    _activeModel = d.active || _activeModel;
+    renderModelBar();
+  } catch(e) { /* silent */ }
+}
+
+function renderModelBar() {
+  const bar = document.getElementById('modelBar');
+  if (!bar) return;
+  bar.innerHTML = '<span class="model-label">GEMINI MODEL ▸</span>'
+    + MODEL_LIST.map(m => {
+        const isActive    = m.id === _activeModel;
+        const isExhausted = _exhaustedModels.has(m.id);
+        const cls = ['model-btn', isActive?'active':'', isExhausted?'exhausted':''].filter(Boolean).join(' ');
+        return `<button class="${cls}" onclick="switchModel('${m.id}')" title="${m.rpd} RPD free">${m.label}</button>`;
+      }).join('');
+}
+
+async function switchModel(modelId) {
+  if (!USE_PYTHON_API) { log('Model switching requires Python backend','warn'); return; }
+  try {
+    await fetch(`${PYTHON_API_BASE}/analyst/models`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', ...(API_KEY?{'Authorization':'Bearer '+API_KEY}:{}) },
+      body: JSON.stringify({ model: modelId }),
+    });
+    _activeModel = modelId;
+    renderModelBar();
+    log(`[MODEL] Switched to ${modelId}`,'ok');
+  } catch(e) {
+    log(`[MODEL] Switch failed: ${e.message}`,'err');
+  }
+}
+// ── TRADE SIGNAL PANEL ──────────────────────────────────────────
+const _rCache = {};
+
+async function toggleResearch(ticker){
+  const panel = document.getElementById('rpanel-' + ticker);
+  const btn   = document.getElementById('rbtn-'   + ticker);
+  if(!panel||!btn) return;
+  if(panel.classList.contains('show')){
+    panel.classList.remove('show');
+    btn.innerHTML = '&#10022; DEEP RESEARCH &mdash; SEC &middot; NEWS &middot; ANALYSTS &middot; RISKS';
+    return;
+  }
+  if(_rCache[ticker]){ renderResearchPanel(ticker, _rCache[ticker]); return; }
+  if(!USE_PYTHON_API){
+    panel.classList.add('show');
+    panel.innerHTML = '<div style="color:var(--yellow);font-family:Space Mono,monospace;font-size:10px">&#9888; Deep Research requires Python backend.<br>Run: python momentum_screener.py --serve<br>Then set USE_PYTHON_API = true</div>';
+    return;
+  }
+  btn.disabled=true;
+  btn.textContent='Researching SEC, news, analysts... (15-30s)';
+  panel.classList.add('show');
+  panel.innerHTML='<div style="color:var(--muted);font-family:Space Mono,monospace;font-size:10px">Querying Claude AI + web search...</div>';
+  log('[RESEARCH] Fetching for '+ticker+'...','info');
+  try{
+    // Find the card's current price, setup, score to pass as context to Gemini
+    const card   = document.getElementById('rbtn-'+ticker)?.closest('.card');
+    const priceEl= card?.querySelector('.price');
+    const setupEl= card?.querySelector('.setup-tag');
+    const scoreEl= card?.querySelector('.conf-s');
+    const price  = priceEl  ? (priceEl.textContent||'').replace('$','').trim()  : '0';
+    const setup  = setupEl  ? (setupEl.textContent||'').trim()                   : '';
+    const score  = scoreEl  ? (scoreEl.textContent||'').replace('/100','').trim(): '0';
+    const data = await apiFetch(
+      PYTHON_API_BASE+'/research?ticker='+ticker
+      +'&days=7&price='+price+'&setup='+encodeURIComponent(setup)+'&score='+score
+    );
+    _rCache[ticker]=data;
+    renderResearchPanel(ticker,data);
+    log('[RESEARCH] '+ticker+' done — sentiment: '+(data.news_and_sentiment&&data.news_and_sentiment.sentiment||'?'),'ok');
+  }catch(e){
+    panel.innerHTML='<div style="color:var(--red);font-family:Space Mono,monospace;font-size:10px">&#10007; Research failed: '+e.message+'<br>Check ANTHROPIC_API_KEY is set in server env.</div>';
+    log('[RESEARCH] Failed for '+ticker+': '+e.message,'err');
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML='&#10022; AI SIGNAL &mdash; click to collapse';
+  }
+}
+
+function renderResearchPanel(ticker, r){
+  const panel = document.getElementById('rpanel-'+ticker);
+  if(!panel) return;
+  panel.classList.add('show');
+
+  if(r.error && r.conviction === 0){
+    panel.innerHTML='<div style="color:var(--red);font-family:Space Mono,monospace;font-size:10px">&#10007; '+r.error+'</div>';
+    return;
+  }
+
+  const dec   = (r.decision||'WAIT').toUpperCase();
+  const conv  = r.conviction||0;
+  const sent  = (r.news_sentiment||'neutral').toUpperCase();
+  const ok    = r.entry_ok;
+  const night = r.hold_overnight;
+  const cached= r._cached ? ' &middot; CACHED' : '';
+  const grem  = r._google_remaining !== undefined ? r._google_remaining : '?';
+  const mrem  = r._gemini_remaining !== undefined ? r._gemini_remaining : '?';
+
+  const decCol  = dec==='BUY'?'var(--green)':dec==='AVOID'?'var(--red)':'var(--yellow)';
+  const sentCol = sent==='BULLISH'?'var(--green)':sent==='BEARISH'?'var(--red)':'var(--yellow)';
+  const convBar = Array(10).fill(0).map((_,i)=>
+    '<span style="color:'+(i<conv?decCol:'var(--border)')+'">&#9646;</span>'
+  ).join('');
+
+  panel.innerHTML =
+    '<div style="font-family:Space Mono,monospace;font-size:9px;color:var(--muted);margin-bottom:10px">'
+   +'AI SIGNAL &middot; Google '+grem+' left &middot; Gemini '+mrem+' left'+cached+'</div>'
+
+   // Decision banner
+   +'<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:6px;'
+   +'background:'+(dec==='BUY'?'rgba(0,230,118,0.08)':dec==='AVOID'?'rgba(255,61,87,0.08)':'rgba(255,214,0,0.06)')+';'
+   +'border:1px solid '+(dec==='BUY'?'rgba(0,230,118,0.3)':dec==='AVOID'?'rgba(255,61,87,0.3)':'rgba(255,214,0,0.3)')+';">'
+   +'<div style="font-family:Bebas Neue,sans-serif;font-size:28px;letter-spacing:2px;color:'+decCol+'">'+dec+'</div>'
+   +'<div>'
+   +'<div style="font-family:Space Mono,monospace;font-size:10px;color:var(--muted);margin-bottom:3px">CONVICTION</div>'
+   +'<div style="font-size:14px;letter-spacing:1px">'+convBar+'</div>'
+   +'</div>'
+   +'<div style="margin-left:auto;text-align:right">'
+   +'<div style="font-family:Space Mono,monospace;font-size:9px;color:'+(ok?'var(--green)':'var(--red))'))+'">'+( ok?'&#10003; ENTRY OK':'&#10007; NO ENTRY')+'</div>'
+   +'<div style="font-family:Space Mono,monospace;font-size:9px;color:'+(night?'var(--yellow)':'var(--muted)')+'">OVERNIGHT: '+(night?'YES':'NO')+'</div>'
+   +'<div style="font-family:Space Mono,monospace;font-size:9px;color:'+sentCol+'">'+sent+'</div>'
+   +'</div>'
+   +'</div>'
+
+   // Key fields
+   +(r.headline && r.headline!=='N/A' ?
+     '<div class="rp-section"><div class="rp-label">HEADLINE</div><div>'+r.headline+'</div></div>' : '')
+
+   +(r.catalyst && r.catalyst!=='None found' && r.catalyst!=='N/A' ?
+     '<div class="rp-section"><div class="rp-label" style="color:var(--green)">CATALYST</div>'
+    +'<div style="color:var(--green)">&#9650; '+r.catalyst+'</div></div>' : '')
+
+   +(r.risk && r.risk!=='N/A' ?
+     '<div class="rp-section"><div class="rp-label" style="color:var(--red)">KEY RISK</div>'
+    +'<div style="color:var(--red)">&#9660; '+r.risk+'</div></div>' : '')
+
+   +(r.insider && r.insider!=='None found' && r.insider!=='N/A' ?
+     '<div class="rp-section"><div class="rp-label" style="color:var(--yellow)">INSIDER ACTIVITY</div>'
+    +'<div style="color:var(--yellow)">'+r.insider+'</div></div>' : '')
+
+   +(r.analyst_call && r.analyst_call!=='None found' && r.analyst_call!=='N/A' ?
+     '<div class="rp-section"><div class="rp-label">ANALYST</div><div>'+r.analyst_call+'</div></div>' : '')
+
+   // Reasoning
+   +'<div class="rp-section"><div class="rp-label">WHY</div>'
+   +'<div style="color:var(--text);line-height:1.6">'+r.reasoning+'</div></div>';
+}
+// ── AI ANALYST PANEL ─────────────────────────────────────────────
+const _analystState = {}; // { ticker: { risk, period, result } }
+
+function selRisk(ticker, value, el) {
+  document.querySelectorAll(`#arisk-${ticker} .sel-btn`).forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  if (!_analystState[ticker]) _analystState[ticker] = {};
+  _analystState[ticker].risk = value;
+}
+function selPeriod(ticker, value, el) {
+  document.querySelectorAll(`#aperiod-${ticker} .sel-btn`).forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  if (!_analystState[ticker]) _analystState[ticker] = {};
+  _analystState[ticker].period = value;
+}
+
+function toggleAnalyst(ticker) {
+  const panel = document.getElementById('apanel-' + ticker);
+  if (!panel) return;
+  panel.classList.toggle('show');
+}
+
+async function runAnalyst(ticker) {
+  if (!USE_PYTHON_API) {
+    document.getElementById('ares-' + ticker).innerHTML =
+      '<span style="color:var(--yellow)">⚠ Requires Python backend running with trading_analyst.py</span>';
+    return;
+  }
+  const state  = _analystState[ticker] || {};
+  const risk   = state.risk   || 'moderate';
+  const period = state.period || 'short-term';
+  const runBtn = document.getElementById('arun-' + ticker);
+  const resDiv = document.getElementById('ares-' + ticker);
+
+  runBtn.disabled = true;
+  runBtn.textContent = 'Analysing… (20-40s)';
+  resDiv.innerHTML = '<span style="color:var(--muted);font-family:Space Mono,monospace;font-size:10px">Running 3-phase AI pipeline: news → analysis → strategy…</span>';
+
+  log(`[ANALYST] ${ticker} risk=${risk} period=${period} model=${_activeModel}`,'info');
+
+  try {
+    const data = await apiFetch(
+      `${PYTHON_API_BASE}/analyst?ticker=${ticker}&risk=${risk}&period=${period}`
+    );
+
+    // Track if model was rotated
+    if (data.model_used && data.model_used !== _activeModel) {
+      _activeModel = data.model_used;
+      renderModelBar();
+      log(`[MODEL] Auto-rotated to ${data.model_used}`,'warn');
+    }
+
+    _analystState[ticker] = { risk, period, result: data };
+    renderAnalystResult(ticker, data);
+    log(`[ANALYST] ${ticker} done — ${data.strategies?.top_recommendation||'?'}`,'ok');
+  } catch(e) {
+    resDiv.innerHTML = `<span style="color:var(--red)">✗ ${e.message}</span>`;
+    log(`[ANALYST] ${ticker} failed: ${e.message}`,'err');
+    // Mark model as potentially exhausted
+    _exhaustedModels.add(_activeModel);
+    renderModelBar();
+  } finally {
+    runBtn.disabled = false;
+    runBtn.textContent = '▶ RUN AGAIN';
+  }
+}
+
+function renderAnalystResult(ticker, data) {
+  const div = document.getElementById('ares-' + ticker);
+  if (!div) return;
+
+  if (data.error && !data.strategies) {
+    div.innerHTML = `<span style="color:var(--red)">✗ ${data.error}</span>`;
+    return;
+  }
+
+  const strats  = data.strategies || {};
+  const daily   = strats.daily_action_summary || {};
+  const action  = (daily.recommended_action || 'WAIT').toUpperCase();
+  const acol    = action==='BUY'?'var(--green)':action==='SELL'||action==='AVOID'?'var(--red)':'var(--yellow)';
+  const analysis= data.analysis || {};
+  const sent    = (analysis.market_sentiment?.overall||'neutral').toUpperCase();
+  const scol    = sent==='BULLISH'?'var(--green)':sent==='BEARISH'?'var(--red)':'var(--yellow)';
+  const sig     = (analysis.overall_signal||'').toUpperCase();
+  const conf    = analysis.confidence||'?';
+  const model   = data.model_used || _activeModel;
+
+  let stratHtml = '';
+  for (const s of (strats.strategies||[])) {
+    const dirn  = (s.trade_setup?.direction||'?');
+    const dcol  = dirn==='LONG'?'var(--green)':dirn==='SHORT'?'var(--red)':'var(--yellow)';
+    const entry = s.entry?.price_zone || 'market';
+    const tp    = s.exit?.take_profit || '?';
+    const sl    = s.exit?.stop_loss   || '?';
+    const conv  = s.conviction||'?';
+    stratHtml += `
+      <div class="ar-section">
+        <div class="ar-lbl">STRATEGY</div>
+        <div style="font-weight:700;color:var(--text)">${s.strategy_name||'?'}</div>
+        <div style="color:${dcol};font-family:Space Mono,monospace;font-size:9px;margin:2px 0">${dirn} · conv ${conv}/10</div>
+        <div>Entry: <strong>${entry}</strong></div>
+        <div>TP: <span style="color:var(--green)">${tp}</span>  &nbsp; SL: <span style="color:var(--red)">${sl}</span></div>
+        ${(s.primary_risks||[]).map(r=>`<div style="color:var(--red);font-size:10px">▼ ${r}</div>`).join('')}
+      </div>`;
+  }
+
+  div.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;
+      background:${action==='BUY'?'rgba(0,230,118,0.07)':action==='AVOID'?'rgba(255,61,87,0.07)':'rgba(255,214,0,0.05)'};
+      border:1px solid ${action==='BUY'?'rgba(0,230,118,0.25)':action==='AVOID'?'rgba(255,61,87,0.25)':'rgba(255,214,0,0.25)'}">
+      <div class="ar-decision" style="color:${acol}">${action}</div>
+      <div>
+        <div style="font-family:Space Mono,monospace;font-size:9px;color:var(--muted)">SENTIMENT</div>
+        <div style="color:${scol};font-family:Space Mono,monospace;font-size:10px">${sent}</div>
+      </div>
+      <div style="margin-left:auto;text-align:right">
+        <div style="font-family:Space Mono,monospace;font-size:9px;color:var(--muted)">SIGNAL</div>
+        <div style="font-family:Space Mono,monospace;font-size:10px">${sig} ${conf}/10</div>
+      </div>
+    </div>
+
+    <div class="ar-section">
+      <div class="ar-lbl">TODAY'S ENTRY</div>
+      <div>${daily.best_entry_today||'—'}</div>
+      <div style="color:var(--muted);font-size:10px;margin-top:3px">Key level: ${daily.key_level_to_watch||'—'}</div>
+      <div style="color:var(--red);font-size:10px">Avoid if: ${daily.avoid_if||'—'}</div>
+    </div>
+
+    <div class="ar-section">
+      <div class="ar-lbl">MARKET SUMMARY</div>
+      <div>${analysis.analysis_summary||'—'}</div>
+    </div>
+
+    ${stratHtml}
+
+    <div class="ar-model">Model: ${model} · ${data.risk||'?'} risk · ${data.period||'?'}</div>`;
+}
 // ── INIT ─────────────────────────────────────────────────────────
 document.getElementById('tickerInput').addEventListener('keydown',e=>{if(e.key==='Enter')runScan();});
 if(USE_PYTHON_API) document.getElementById('apiBanner').classList.add('show');
 renderSessionBanner();
 setInterval(renderSessionBanner,60000);
+loadModels();
 loadRegime();
 document.getElementById('tickerInput').value=PRESETS.watchlist.join(', ');
 setTimeout(runScan,500);
