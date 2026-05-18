@@ -398,7 +398,7 @@ def run(tickers, watch=False):
 # ── FLASK API SERVER ──────────────────────────────────────────────────────────
 def serve(port=5000):
     try:
-        from flask import Flask, jsonify, request
+        from flask import Flask, jsonify, request, abort, Response
         from flask_cors import CORS
     except ImportError:
         print(red("\n  Run:  pip install flask flask-cors\n"))
@@ -509,6 +509,48 @@ def serve(port=5000):
             abort(400, f"market must be one of: {list(MAGIC_UNIVERSE.keys())}")
         results = magic_find(market=market, top=top, min_score=min_score)
         return jsonify(results)
+
+    research_routes = False
+    analyst_routes  = False
+
+    try:
+        import research_google
+        from research_google import register_research_routes
+        register_research_routes(app, require_api_key)
+        research_routes = True
+    except Exception as e:
+        print(yellow(f"  ⚠ Research route disabled: {e}"))
+
+    try:
+        import trading_analyst
+        from trading_analyst import register_analyst_routes
+        register_analyst_routes(app, require_api_key)
+        analyst_routes = True
+    except Exception as e:
+        print(yellow(f"  ⚠ Analyst route disabled: {e}"))
+
+    if not research_routes:
+        @app.route("/api/research")
+        @require_api_key
+        def api_research_stub():
+            return jsonify({"error": "Research API unavailable. Ensure research_google.py is present and importable."}), 500
+
+        @app.route("/api/research/quota")
+        @require_api_key
+        def api_research_quota_stub():
+            return jsonify({"error": "Research API unavailable."}), 500
+
+    if not analyst_routes:
+        @app.route("/api/analyst")
+        @require_api_key
+        def api_analyst_stub():
+            return jsonify({"error": "Analyst API unavailable. Ensure trading_analyst.py is present and importable."}), 500
+
+        @app.route("/api/analyst/models", methods=["GET", "POST"])
+        @require_api_key
+        def api_analyst_models_stub():
+            return jsonify({"error": "Analyst API unavailable."}), 500
+
     # ── startup banner ────────────────────────────────────────────────────────
     print(f"\n{'═'*64}")
     print(f"  {bold('MOMENTUM SCREENER — API SERVER')}")
@@ -522,8 +564,14 @@ def serve(port=5000):
     print(f"  {cyan('GET')}  http://localhost:{port}/api/scan?preset=watchlist     (auth)")
     print(f"  {cyan('GET')}  http://0.0.0.0:{port}/api/magic?market=both&top=5   (auth)")
     print(f"  {cyan('GET')}  http://0.0.0.0:{port}/api/magic?market=us&top=5     (auth)")
-    print(f"  {cyan('GET')}  http://0.0.0.0:{port}/api/magic?market=sg&top=5     (auth)")
-    print(f"\n  {dim('Press Ctrl+C to stop.')}\n")
+    print(f"  {cyan('GET')}  http://0.0.0.0:{port}/api/magic?market=sg&top=5     (auth)")    
+    if research_routes:
+        print(f"  {cyan('GET')}  http://0.0.0.0:{port}/api/research?ticker=FLEX       (auth)")
+        print(f"  {cyan('GET')}  http://0.0.0.0:{port}/api/research/quota           (auth)")
+    if analyst_routes:
+        print(f"  {cyan('GET')}  http://0.0.0.0:{port}/api/analyst?ticker=AAPL&risk=moderate&period=short-term   (auth)")
+        print(f"  {cyan('GET')}  http://0.0.0.0:{port}/api/analyst/models                 (auth)")    
+        print(f"\n  {dim('Press Ctrl+C to stop.')}\n")
 
     app.run(host="0.0.0.0", port=port, debug=False)
 
