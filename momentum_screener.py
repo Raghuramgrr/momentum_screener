@@ -21,6 +21,7 @@ import argparse
 import functools
 from datetime import datetime
 
+
 # ── deps ──────────────────────────────────────────────────────────────────────
 try:
     import yfinance as yf
@@ -528,6 +529,20 @@ def serve(port=5000):
         analyst_routes = True
     except Exception as e:
         print(yellow(f"  ⚠ Analyst route disabled: {e}"))
+    report_routes = False
+    try:
+        import data_analyst
+        from data_analyst import register_data_analyst_routes
+        register_data_analyst_routes(app, require_api_key)
+        report_routes = True
+    except Exception as e:
+        print(yellow(f"  ⚠ Report route disabled: {e}"))
+ 
+    if not report_routes:
+        @app.route("/api/report")
+        @require_api_key
+        def api_report_stub():
+            return jsonify({"error": "Report API unavailable. Ensure data_analyst.py is present."}), 500
 
     if not research_routes:
         @app.route("/api/research")

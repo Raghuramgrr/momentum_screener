@@ -1,4 +1,5 @@
   ⚠ Analyst route disabled: 'NoneType' object has no attribute 'get'
+  ⚠ Report route disabled: No module named 'data_analyst'
 
 ════════════════════════════════════════════════════════════════
   MOMENTUM SCREENER — API SERVER
@@ -24,77 +25,52 @@ WARNING: This is a development server. Do not use it in a production deployment.
  * Running on http://127.0.0.1:5000
  * Running on http://172.27.180.232:5000
 Press CTRL+C to quit
-127.0.0.1 - - [18/May/2026 10:51:53] "GET /health HTTP/1.1" 200 -
-127.0.0.1 - - [18/May/2026 10:51:54] "GET / HTTP/1.1" 200 -
-  10:51:54  ·  [SPY] Fetching...
-  10:51:54  ·  [AMD] Fetching...
-  10:51:54  ·  [COCO] Fetching...
-  10:51:54    ·  [JBL] Fetching...  
-10:51:5410:51:54    ·  [FLEX] Fetching...·
-  [MPC] Fetching...
-HTTP Error 401: {"finance":{"result":null,"error":{"code":"Unauthorized","description":"User is unable to access this feature - https://bit.ly/yahoo-finance-api-feedback"}}}
-  10:51:55  ✓  [SPY] OK  $739.17  -1.20%  65 bars  vol 60.3M
-  10:51:55  ·  [QQQ] Fetching...
-  10:51:55  ✓  [AMD] OK  $424.10  -5.69%  65 bars  vol 29.0M
-  10:51:55  ✓  [AMD] Score 70/100 | MOMENTUM CONT. | ADX 39 | RSI 68 | RVOL 0.6x | MACD BULL
-127.0.0.1 - - [18/May/2026 10:51:55] "GET /api/quote?ticker=AMD HTTP/1.1" 200 -
-  10:51:55  ✓  [COCO] OK  $78.44  +2.62%  65 bars  vol 1.4M
-  10:51:55  ⚠  [COCO] Score 55/100 | EXTENDED | ADX 95 | RSI 95 | RVOL 0.8x | MACD BULL
-127.0.0.1 - - [18/May/2026 10:51:55] "GET /api/quote?ticker=COCO HTTP/1.1" 200 -
-  10:51:56  ✓  [JBL] OK  $339.82  -4.08%  65 bars  vol 1.2M
-  10:51:56  ⚠  [JBL] Score 50/100 | PULLBACK ENTRY | ADX 12 | RSI 50 | RVOL 1.0x | MACD BULL
-127.0.0.1 - - [18/May/2026 10:51:56] "GET /api/quote?ticker=JBL HTTP/1.1" 200 -
-  10:51:56  ✓  [FLEX] OK  $137.86  -4.00%  65 bars  vol 6.5M
-  10:51:56  ✓  [FLEX] Score 65/100 | EXTENDED | ADX 66 | RSI 80 | RVOL 1.1x | MACD BULL
-127.0.0.1 - - [18/May/2026 10:51:56] "GET /api/quote?ticker=FLEX HTTP/1.1" 200 -
-  10:52:02  ✓  [MPC] OK  $255.03  +2.50%  65 bars  vol 2.2M
-  10:52:02  ✓  [MPC] Score 85/100 | MOMENTUM CONT. | ADX 35 | RSI 68 | RVOL 0.9x | MACD BULL
-127.0.0.1 - - [18/May/2026 10:52:02] "GET /api/quote?ticker=MPC HTTP/1.1" 200 -
-  10:52:02  ✓  [QQQ] OK  $708.93  -1.51%  65 bars  vol 51.7M
-  10:52:02  ·  [^VIX] Fetching...
-  10:52:03  ✓  [^VIX] OK  $18.43  +6.78%  63 bars  vol 0.0M
-127.0.0.1 - - [18/May/2026 10:52:03] "GET /api/regime HTTP/1.1" 200 -
-  10:52:24  ·  [U96.SI] Fetching...
-    10:52:24  10:52:24·  [G92.SI] Fetching...
-    10:52:24  ·  [1F2.SI] Fetching...
-  10:52:24  ·  [BN4.SI] Fetching...
-·  [D05.SI] Fetching...
+127.0.0.1 - - [22/May/2026 13:11:08] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2026 13:11:08] "GET / HTTP/1.1" 200 -
+  13:11:09  ·  [SPY] Fetching...
+  13:11:09  ✓  [SPY] OK  $742.72  +0.20%  65 bars  vol 43.2M
+  13:11:09  ·  [QQQ] Fetching...
+  13:11:09  ·  [FLEX] Fetching...
+  13:11:09  ·  [MPC] Fetching...
+  13:11:09  ·  [COCO] Fetching...
+  13:11:09  ·  [JBL] Fetching...
+  13:11:09  ·  [AMD] Fetching...
 HTTP Error 401: {"finance":{"result":null,"error":{"code":"Unauthorized","description":"Invalid Crumb"}}}
-  10:52:25  ✓  [U96.SI] OK  $6.14  +0.16%  64 bars  vol 0.8M
-  10:52:25  ⚠  [U96.SI] Score 50/100 | NEUTRAL | ADX 43 | RSI 21 | RVOL 0.2x | MACD BEAR
-127.0.0.1 - - [18/May/2026 10:52:25] "GET /api/quote?ticker=U96.SI HTTP/1.1" 200 -
-  10:52:25  ✓  [G92.SI] OK  $2.03  -0.98%  64 bars  vol 0.3M
-  10:52:25  ⚠  [G92.SI] Score 50/100 | BB SQUEEZE | ADX 17 | RSI 45 | RVOL 0.2x | MACD BULL
-127.0.0.1 - - [18/May/2026 10:52:25] "GET /api/quote?ticker=G92.SI HTTP/1.1" 200 -
+  13:11:10  ✓  [QQQ] OK  $714.51  +0.19%  65 bars  vol 36.2M
+  13:11:10  ·  [^VIX] Fetching...
+  13:11:10  ✓  [FLEX] OK  $131.07  -0.34%  65 bars  vol 4.8M
+  13:11:10  ✓  [FLEX] Score 65/100 | EXTENDED | ADX 44 | RSI 72 | RVOL 0.7x | MACD BULL
+127.0.0.1 - - [22/May/2026 13:11:10] "GET /api/quote?ticker=FLEX HTTP/1.1" 200 -
+  13:11:11  ✓  [MPC] OK  $248.43  -3.85%  65 bars  vol 2.6M
+  13:11:11  ⚠  [MPC] Score 50/100 | PULLBACK ENTRY | ADX 14 | RSI 52 | RVOL 1.1x | MACD BULL
+127.0.0.1 - - [22/May/2026 13:11:11] "GET /api/quote?ticker=MPC HTTP/1.1" 200 -
+  13:11:11  ✓  [COCO] OK  $78.83  +1.22%  65 bars  vol 0.9M
+  13:11:11  ⚠  [COCO] Score 55/100 | EXTENDED | ADX 69 | RSI 83 | RVOL 0.5x | MACD BULL
+127.0.0.1 - - [22/May/2026 13:11:11] "GET /api/quote?ticker=COCO HTTP/1.1" 200 -
 HTTP Error 401: {"finance":{"result":null,"error":{"code":"Unauthorized","description":"Invalid Crumb"}}}
 HTTP Error 401: {"finance":{"result":null,"error":{"code":"Unauthorized","description":"User is unable to access this feature - https://bit.ly/yahoo-finance-api-feedback"}}}
-  10:52:25  ✓  [1F2.SI] OK  $0.47  +2.20%  64 bars  vol 0.1M
-  10:52:25  ✓  [1F2.SI] Score 65/100 | BB SQUEEZE | ADX 10 | RSI 58 | RVOL 0.3x | MACD BULL
-127.0.0.1 - - [18/May/2026 10:52:25] "GET /api/quote?ticker=1F2.SI HTTP/1.1" 200 -
-  10:52:26  ✓  [D05.SI] OK  $60.31  +0.18%  64 bars  vol 1.3M
-  10:52:26  ✓  [D05.SI] Score 70/100 | MOMENTUM CONT. | ADX 70 | RSI 91 | RVOL 0.2x | MACD BULL
-127.0.0.1 - - [18/May/2026 10:52:26] "GET /api/quote?ticker=D05.SI HTTP/1.1" 200 -
-  10:52:26  ✓  [BN4.SI] OK  $10.26  -3.21%  64 bars  vol 3.8M
-  10:52:26  ⚠  [BN4.SI] Score 50/100 | NEUTRAL | ADX 50 | RSI 29 | RVOL 0.8x | MACD BEAR
-127.0.0.1 - - [18/May/2026 10:52:26] "GET /api/quote?ticker=BN4.SI HTTP/1.1" 200 -
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  ANALYSING: D05.SI  |  Risk: moderate  |  Period: short-term
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  [1/3] Fetching market news for D05.SI...
+  13:11:11  ✓  [JBL] OK  $356.41  +3.26%  65 bars  vol 1.0M
+  13:11:11  ⚠  [JBL] Score 60/100 | TREND FOLLOWING | ADX 3 | RSI 55 | RVOL 0.8x | MACD BULL
+127.0.0.1 - - [22/May/2026 13:11:11] "GET /api/quote?ticker=JBL HTTP/1.1" 200 -
   [SERP] ⚠ No SERPAPI_KEY — Gemini will use training knowledge only
-  [GEMINI] gemini-3.1-flash-lite (233 calls left)...
-  [GEMINI] gemini-3.1-flash-lite → 599 chars
-  ✓ Signal — decision: WAIT  conviction: 3/10
+  13:11:11  ✓  [AMD] OK  $449.59  +0.45%  65 bars  vol 27.1M
+  13:11:11  ✓  [AMD] Score 65/100 | MOMENTUM CONT. | ADX 29 | RSI 68 | RVOL 0.6x | MACD BULL
+127.0.0.1 - - [22/May/2026 13:11:11] "GET /api/quote?ticker=AMD HTTP/1.1" 200 -
+  13:11:11  ✓  [^VIX] OK  $16.76  -3.90%  64 bars  vol 0.0M
+127.0.0.1 - - [22/May/2026 13:11:11] "GET /api/regime HTTP/1.1" 200 -
+  [GEMINI] gemini-2.5-flash (239 calls left)...
+  [GEMINI] gemini-2.5-flash → 564 chars
+127.0.0.1 - - [22/May/2026 13:11:15] "GET /api/research?ticker=FLEX HTTP/1.1" 200 -
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ANALYSING: FLEX  |  Risk: moderate  |  Period: short-term
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [1/3] Fetching market news for FLEX...
+  [CACHE] Hit for FLEX
+  ✓ Signal [CACHED] — decision: WAIT  conviction: 3/10
 
   [2/3] Market data analysis...
-  [GEMINI] gemini-3.1-flash-lite (232 calls left)...
-  [GEMINI] gemini-3.1-flash-lite → 2087 chars
-  ✓ hold confidence 3/10
-
-  [3/3] Generating strategy...
-  [GEMINI] gemini-3.1-flash-lite (231 calls left)...
-  [GEMINI] gemini-3.1-flash-lite → 2426 chars
-  ✓ Mean Reversion Range Trade
-127.0.0.1 - - [18/May/2026 10:53:07] "GET /api/analyst?ticker=D05.SI&risk=moderate&period=short-term HTTP/1.1" 200 -
+  [GEMINI] gemini-2.5-flash (238 calls left)...
+  [GEMINI] ✗ Gemini error on gemini-2.5-flash: 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand 
+127.0.0.1 - - [22/May/2026 13:11:26] "GET /api/analyst?ticker=FLEX&risk=moderate&period=short-term HTTP/1.1" 200 -
